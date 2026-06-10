@@ -17,16 +17,18 @@ private:
 	}
 
 	constexpr const char* get_partial_BI_field(u32 bi)
-	{
-		switch (bi % 4)
-		{
-		case 0x0: return "lt";
-		case 0x1: return "gt";
-		case 0x2: return "eq";
-		case 0x3: return "so";
-		default: fmt::throw_exception("Unreachable");
-		}
-	}
+{
+    switch (bi % 4)
+    {
+    case 0: return "lt";
+    case 1: return "gt";
+    case 2: return "eq";
+    case 3: return "so";
+    }
+
+    fmt::throw_exception("Unreachable");
+    return "";
+}
 
 private:
 	void DisAsm_V4(std::string_view op, u32 v0, u32 v1, u32 v2, u32 v3)

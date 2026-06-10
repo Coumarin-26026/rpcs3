@@ -1,0 +1,90 @@
+name: Build RPCS3 macOS ARM64
+
+on:
+workflow_dispatch:
+push:
+branches:
+- master
+- main
+pull_request:
+
+concurrency:
+group: ${{ github.ref }}-macos
+cancel-in-progress: true
+
+env:
+MACOSX_DEPLOYMENT_TARGET: "12.0"
+
+jobs:
+macOS_ARM64:
+name: RPCS3 macOS ARM64 (Monterey Compatible)
+runs-on: macos-14
+
+```
+steps:
+  - name: Checkout
+    uses: actions/checkout@v4
+    with:
+      fetch-depth: 0
+
+  - name: Install Dependencies
+    run: |
+      brew update
+
+      brew install \
+        cmake \
+        ninja \
+        llvm \
+        nasm \
+        ccache
+
+      brew install qt@6
+
+  - name: Setup Environment
+    run: |
+      echo "Qt6_DIR=$(brew --prefix qt@6)/lib/cmake/Qt6" >> $GITHUB_ENV
+      echo "CC=$(brew --prefix llvm)/bin/clang" >> $GITHUB_ENV
+      echo "CXX=$(brew --prefix llvm)/bin/clang++" >> $GITHUB_ENV
+
+  - name: Configure
+    run: |
+      cmake -B build \
+        -G Ninja \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_OSX_ARCHITECTURES=arm64 \
+        -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 \
+        -DQt6_DIR="${Qt6_DIR}"
+
+  - name: Build
+    run: |
+      cmake --build build --parallel 3
+
+  - name: Verify Binary
+    run: |
+      find build -type f | grep -i rpcs3 || true
+
+  - name: Package
+    run: |
+      mkdir artifacts
+
+      APP=$(find build -name "*.app" | head -n 1)
+
+      if [ -z "$APP" ]; then
+        echo "RPCS3.app not found"
+        exit 1
+      fi
+
+      cp -R "$APP" artifacts/
+
+  - name: Create ZIP
+    run: |
+      cd artifacts
+      ditto -c -k --sequesterRsrc --keepParent *.app RPCS3-macOS-arm64.zip
+
+  - name: Upload Artifact
+    uses: actions/upload-artifact@v4
+    with:
+      name: RPCS3-macOS-arm64
+      path: artifacts/RPCS3-macOS-arm64.zip
+      compression-level: 0
+```

@@ -1,26 +1,26 @@
 name: Build RPCS3 macOS ARM64
 
 on:
-workflow_dispatch:
-push:
-branches:
-- master
-- main
-pull_request:
+  workflow_dispatch:
+  push:
+  branches:
+    - master
+    - main
+    pull_request:
 
 concurrency:
-group: ${{ github.ref }}-macos
-cancel-in-progress: true
+  group: ${{ github.ref }}-macos
+  cancel-in-progress: true
 
 env:
-MACOSX_DEPLOYMENT_TARGET: "12.0"
+  MACOSX_DEPLOYMENT_TARGET: "12.0"
 
 jobs:
-macOS_ARM64:
-name: RPCS3 macOS ARM64 (Monterey Compatible)
-runs-on: macos-14
+  macOS_ARM64:
+    name: RPCS3 macOS ARM64 (Monterey Compatible)
+    runs-on: macos-14
 
-```
+
 steps:
   - name: Checkout
     uses: actions/checkout@v4
@@ -87,4 +87,4 @@ steps:
       name: RPCS3-macOS-arm64
       path: artifacts/RPCS3-macOS-arm64.zip
       compression-level: 0
-```
+

@@ -47,23 +47,23 @@ if [ ! -d "$CCACHE_DIR" ]; then
   mkdir -p "$CCACHE_DIR"
 fi
 
-# Get Qt
-if [ ! -d "/tmp/Qt/$QT_VER" ]; then
-  mkdir -p "/tmp/Qt"
-  git clone https://github.com/engnr/qt-downloader.git
-  cd qt-downloader
-  git checkout f52efee0f18668c6d6de2dec0234b8c4bc54c597
-  sed -i '' "s/'qt{0}_{0}{1}{2}'.format(major, minor, patch)]))/'qt{0}_{0}{1}{2}'.format(major, minor, patch), 'qt{0}_{0}{1}{2}'.format(major, minor, patch)]))/g" qt-downloader
-  sed -i '' "s/'{}\/{}\/qt{}_{}\/'/'{0}\/{1}\/qt{2}_{3}\/qt{2}_{3}\/'/g" qt-downloader
-  cd "/tmp/Qt"
-  pip3 install py7zr requests semantic_version lxml --no-cache --break-system-packages
-  mkdir -p "$QT_VER/macos" ; ln -s "macos" "$QT_VER/clang_64"
-  sed -i '' 's/args\.version \/ derive_toolchain_dir(args) \/ //g' "$WORKDIR/qt-downloader/qt-downloader"
-  python3 "$WORKDIR/qt-downloader/qt-downloader" macos desktop "$QT_VER" clang_64 --opensource --addons qtmultimedia qtimageformats -o "$QT_VER/clang_64"
-fi
+# Use prebuilt Qt 6.5.8 ARM64
 
-cd "$WORKDIR"
-ditto "/tmp/Qt/$QT_VER" "qt-downloader/$QT_VER"
+echo "Downloading prebuilt Qt 6.5.8..."
+
+mkdir -p /tmp
+
+curl -L \
+  "https://drive.usercontent.google.com/download?id=1tiGT8NU3eUkfU956kkQilYwuK2kUCnC3&export=download&confirm=t&uuid=3ad22766-0f54-48b6-bfd2-de26be6d9383" \
+  -o /tmp/qt-6.5.8-arm64.tar.gz
+
+tar -xzf /tmp/qt-6.5.8-arm64.tar.gz -C /tmp
+
+export Qt6_DIR="/tmp/qt65/lib/cmake/Qt6"
+
+echo "Qt6_DIR=$Qt6_DIR"
+
+ls "$Qt6_DIR"
 
 export Qt6_DIR="$WORKDIR/qt-downloader/$QT_VER/clang_64/lib/cmake/Qt$QT_VER_MAIN"
 export SDL3_DIR="$BREW_PATH/opt/sdl3/lib/cmake/SDL3"

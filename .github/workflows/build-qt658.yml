@@ -1,69 +1,68 @@
 name: Build Qt 6.5.8 ARM64
 
 on:
-workflow_dispatch:
+  workflow_dispatch:
 
 jobs:
-build_qt:
-runs-on: macos-14
+  build_qt:
+    runs-on: macos-14
 
-```
-env:
-  QT_SOURCE_URL: "https://drive.usercontent.google.com/download?id=1RTWw_zpGJa0nCC1i5QHAhUGpV6m6LmeF&export=download&confirm=t&uuid=e3ef8ced-fcd0-410e-aff1-1f36f3584cf8"
 
-steps:
-  - name: Install dependencies
-    run: |
-      brew update
-      brew install cmake ninja pkg-config python
-
-  - name: Download Qt source
-    run: |
-      curl -L "$QT_SOURCE_URL" -o qt.zip
-
-  - name: Extract Qt source
-    run: |
-      unzip -q qt.zip
-
-  - name: Configure Qt
-    run: |
-      cd qt-everywhere-src-6.5.8
-
-      mkdir build
-      cd build
-
-      ../configure \
-        -prefix $HOME/qt65 \
-        -release \
-        -opensource \
-        -confirm-license \
-        -nomake tests \
-        -nomake examples \
-        QMAKE_APPLE_DEVICE_ARCHS=arm64
-
-  - name: Build Qt
-    run: |
-      cd qt-everywhere-src-6.5.8/build
-      cmake --build . --parallel 4
-
-  - name: Install Qt
-    run: |
-      cd qt-everywhere-src-6.5.8/build
-      cmake --install .
-
-  - name: Verify Qt
-    run: |
-      find $HOME/qt65 -name Qt6Config.cmake
-
-  - name: Package Qt
-    run: |
-      cd $HOME
-      tar -czf qt-6.5.8-arm64.tar.gz qt65
-
-  - name: Upload Artifact
-    uses: actions/upload-artifact@v4
-    with:
-      name: qt-6.5.8-arm64
-      path: ~/qt-6.5.8-arm64.tar.gz
-      compression-level: 0
-```
+    env:
+      QT_SOURCE_URL: "https://drive.usercontent.google.com/download?id=1RTWw_zpGJa0nCC1i5QHAhUGpV6m6LmeF&export=download&confirm=t&uuid=e3ef8ced-fcd0-410e-aff1-1f36f3584cf8"
+    
+    steps:
+      - name: Install dependencies
+        run: |
+          brew update
+          brew install cmake ninja pkg-config python
+    
+      - name: Download Qt source
+        run: |
+          curl -L "$QT_SOURCE_URL" -o qt.zip
+    
+      - name: Extract Qt source
+        run: |
+          unzip -q qt.zip
+    
+      - name: Configure Qt
+        run: |
+          cd qt-everywhere-src-6.5.8
+    
+          mkdir build
+          cd build
+    
+          ../configure \
+            -prefix $HOME/qt65 \
+            -release \
+            -opensource \
+            -confirm-license \
+            -nomake tests \
+            -nomake examples \
+            QMAKE_APPLE_DEVICE_ARCHS=arm64
+    
+      - name: Build Qt
+        run: |
+          cd qt-everywhere-src-6.5.8/build
+          cmake --build . --parallel 4
+    
+      - name: Install Qt
+        run: |
+          cd qt-everywhere-src-6.5.8/build
+          cmake --install .
+    
+      - name: Verify Qt
+        run: |
+          find $HOME/qt65 -name Qt6Config.cmake
+    
+      - name: Package Qt
+        run: |
+          cd $HOME
+          tar -czf qt-6.5.8-arm64.tar.gz qt65
+    
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: qt-6.5.8-arm64
+          path: ~/qt-6.5.8-arm64.tar.gz
+          compression-level: 0

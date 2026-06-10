@@ -134,9 +134,9 @@ jobs:
     runs-on: macos-14
     env:
       CCACHE_DIR: /tmp/ccache_dir
-      QT_VER: '6.11.1'
+      QT_VER: '6.5.8'
       QT_VER_MAIN: '6'
-      LLVM_COMPILER_VER: '21'
+      LLVM_COMPILER_VER: '19'
       RELEASE_MESSAGE: ../GitHubReleaseMessage.txt
       UPLOAD_COMMIT_HASH: ${{ matrix.UPLOAD_COMMIT_HASH }}
       UPLOAD_REPO_FULL_NAME: ${{ matrix.UPLOAD_REPO_FULL_NAME }}
@@ -213,7 +213,7 @@ jobs:
     env:
       COMPILER: msvc
       QT_VER_MAIN: '6'
-      QT_VER: '6.11.1'
+      QT_VER: '6.5.8'
       QT_VER_MSVC: 'msvc2022'
       QT_DATE: '202605090529'
       LLVM_VER: '19.1.7'

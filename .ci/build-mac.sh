@@ -65,7 +65,7 @@ echo "Qt6_DIR=$Qt6_DIR"
 
 ls "$Qt6_DIR"
 
-export Qt6_DIR="$WORKDIR/qt-downloader/$QT_VER/clang_64/lib/cmake/Qt$QT_VER_MAIN"
+export Qt6_DIR="/tmp/qt65/lib/cmake/Qt6"
 export SDL3_DIR="$BREW_PATH/opt/sdl3/lib/cmake/SDL3"
 
 export PATH="/opt/homebrew/opt/llvm@$LLVM_COMPILER_VER/bin:$PATH"

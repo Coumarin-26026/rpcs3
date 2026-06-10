@@ -24,6 +24,15 @@ jobs:
       - name: Extract Qt source
         run: |
           unzip -q qt.zip
+      - name: Fix line endings
+        run: |
+          cd qt-everywhere-src-6.5.8
+      
+          sed -i '' 's/\r$//' configure
+          chmod +x configure
+      
+          sed -i '' 's/\r$//' qtbase/configure
+          chmod +x qtbase/configure    
     
       - name: Configure Qt
         run: |

@@ -20,6 +20,10 @@ export HOMEBREW_NO_INSTALL_CLEANUP=1
 
 brew update
 
+# Fallback nếu biến không tồn tại
+
+LLVM_COMPILER_VER="${LLVM_COMPILER_VER:-19}"
+
 brew install -f --overwrite --quiet 
 ccache 
 "llvm@$LLVM_COMPILER_VER"
@@ -74,15 +78,7 @@ fi
 WORKDIR="$(pwd)"
 export WORKDIR
 
-# Setup ccache
-
 mkdir -p "$CCACHE_DIR"
-
-# ------------------------------------------------------------------
-
-# Download prebuilt Qt 6.5.8 ARM64
-
-# ------------------------------------------------------------------
 
 echo "Downloading prebuilt Qt 6.5.8..."
 
@@ -95,8 +91,6 @@ curl -L
 rm -rf /tmp/qt65
 tar -xzf /tmp/qt-6.5.8-arm64.tar.gz -C /tmp
 
-# Qt paths
-
 export CMAKE_PREFIX_PATH=/tmp/qt65
 
 export Qt6_DIR=/tmp/qt65/lib/cmake/Qt6
@@ -107,33 +101,21 @@ export Qt6DBusTools_DIR=/tmp/qt65/lib/cmake/Qt6DBusTools
 echo "Qt6_DIR=$Qt6_DIR"
 echo "CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH"
 
-# Debug Qt
-
 find /tmp/qt65/lib/cmake -maxdepth 1 -type d | sort
-
-# SDL
 
 export SDL3_DIR="$BREW_PATH/opt/sdl3/lib/cmake/SDL3"
 
-# LLVM
+export PATH="$BREW_PATH/opt/llvm@$LLVM_COMPILER_VER/bin:$PATH"
 
-export PATH="/opt/homebrew/opt/llvm@$LLVM_COMPILER_VER/bin:$PATH"
-
-export LDFLAGS="-L$BREW_PATH/opt/llvm@$LLVM_COMPILER_VER/lib/c++ 
--L$BREW_PATH/opt/llvm@$LLVM_COMPILER_VER/lib/unwind 
--lunwind"
+export LDFLAGS="-L$BREW_PATH/opt/llvm@$LLVM_COMPILER_VER/lib/c++ -L$BREW_PATH/opt/llvm@$LLVM_COMPILER_VER/lib/unwind -lunwind"
 
 export LLVM_DIR="$BREW_PATH/opt/llvm@$LLVM_COMPILER_VER"
-
-# Vulkan / MoltenVK
 
 export VULKAN_SDK="$BREW_PATH/opt/molten-vk"
 
 ln -sf 
 "$BREW_PATH/opt/vulkan-loader/lib/libvulkan.dylib" 
 "$VULKAN_SDK/lib/libvulkan.dylib"
-
-# Submodules
 
 git submodule -q update --init --depth=1 --jobs=8 
 $(awk '/path/ && !/llvm/ && !/opencv/ && !/SDL/ && !/feralinteractive/ { print $3 }' .gitmodules)
@@ -142,7 +124,6 @@ mkdir -p build
 cd build
 
 if [ "$AARCH64" -eq 1 ]; then
-
 cmake .. 
 -DCMAKE_PREFIX_PATH=/tmp/qt65 
 -DQt6_DIR="$Qt6_DIR" 
@@ -168,9 +149,7 @@ cmake ..
 -DUSE_SYSTEM_SDL=ON 
 -DUSE_SYSTEM_OPENCV=ON 
 -G Ninja
-
 else
-
 cmake .. 
 -DCMAKE_PREFIX_PATH=/tmp/qt65 
 -DQt6_DIR="$Qt6_DIR" 
@@ -194,7 +173,6 @@ cmake ..
 -DUSE_SYSTEM_SDL=ON 
 -DUSE_SYSTEM_OPENCV=ON 
 -G Ninja
-
 fi
 
 ninja

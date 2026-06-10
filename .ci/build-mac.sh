@@ -1,139 +1,207 @@
 #!/bin/sh -ex
+
 # Gather explicit version number and number of commits
+
 COMM_TAG=$(awk '/version{.*}/ { printf("%d.%d.%d", $5, $6, $7) }' rpcs3/rpcs3_version.cpp)
 COMM_COUNT=$(git rev-list --count HEAD)
 COMM_HASH=$(git rev-parse --short=8 HEAD)
 
-# AVVER is used for GitHub releases, it is the version number. LVER is used for release naming.
 AVVER="${COMM_TAG}-${COMM_COUNT}"
 export LVER="${COMM_TAG}-${COMM_COUNT}-${COMM_HASH}"
+
 echo "AVVER=$AVVER" >> .ci/ci-vars.env
+
+# Homebrew
 
 export HOMEBREW_NO_AUTO_UPDATE=1
 export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
 export HOMEBREW_NO_ENV_HINTS=1
 export HOMEBREW_NO_INSTALL_CLEANUP=1
+
 brew update
-brew install -f --overwrite --quiet ccache "llvm@$LLVM_COMPILER_VER"
+
+brew install -f --overwrite --quiet 
+ccache 
+"llvm@$LLVM_COMPILER_VER"
+
 brew link -f --overwrite --quiet "llvm@$LLVM_COMPILER_VER"
+
 if [ "$AARCH64" -eq 1 ]; then
-  brew install -f --overwrite --quiet googletest opencv@4 sdl3 vulkan-headers vulkan-loader molten-vk
-  brew unlink --quiet ffmpeg fmt qtbase qtsvg qtdeclarative protobuf || true
+brew install -f --overwrite --quiet 
+googletest 
+opencv@4 
+sdl3 
+vulkan-headers 
+vulkan-loader 
+molten-vk
+
+```
+brew unlink --quiet ffmpeg fmt qtbase qtsvg qtdeclarative protobuf || true
+```
+
 else
-  arch -x86_64 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-  arch -x86_64 /usr/local/bin/brew install -f --overwrite --quiet python@3.14 opencv@4 "llvm@$LLVM_COMPILER_VER" sdl3 vulkan-headers vulkan-loader molten-vk
-  arch -x86_64 /usr/local/bin/brew unlink  --quiet ffmpeg qtbase qtsvg qtdeclarative protobuf || true
+arch -x86_64 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+```
+arch -x86_64 /usr/local/bin/brew install -f --overwrite --quiet \
+    python@3.14 \
+    opencv@4 \
+    "llvm@$LLVM_COMPILER_VER" \
+    sdl3 \
+    vulkan-headers \
+    vulkan-loader \
+    molten-vk
+
+arch -x86_64 /usr/local/bin/brew unlink --quiet \
+    ffmpeg qtbase qtsvg qtdeclarative protobuf || true
+```
+
 fi
 
-export CXX=clang++
 export CC=clang
+export CXX=clang++
 
-export BREW_PATH;
 if [ "$AARCH64" -eq 1 ]; then
-  BREW_PATH="$(brew --prefix)"
-  export BREW_BIN="/opt/homebrew/bin"
-  export BREW_SBIN="/opt/homebrew/sbin"
+BREW_PATH="$(brew --prefix)"
+export BREW_BIN="/opt/homebrew/bin"
+export BREW_SBIN="/opt/homebrew/sbin"
 else
-  BREW_PATH="$("/usr/local/bin/brew" --prefix)"
-  export BREW_BIN="/usr/local/bin"
-  export BREW_SBIN="/usr/local/sbin"
+BREW_PATH="$("/usr/local/bin/brew" --prefix)"
+export BREW_BIN="/usr/local/bin"
+export BREW_SBIN="/usr/local/sbin"
 fi
 
-export WORKDIR;
 WORKDIR="$(pwd)"
+export WORKDIR
 
 # Setup ccache
-if [ ! -d "$CCACHE_DIR" ]; then
-  mkdir -p "$CCACHE_DIR"
-fi
 
-# Use prebuilt Qt 6.5.8 ARM64
+mkdir -p "$CCACHE_DIR"
+
+# ------------------------------------------------------------------
+
+# Download prebuilt Qt 6.5.8 ARM64
+
+# ------------------------------------------------------------------
 
 echo "Downloading prebuilt Qt 6.5.8..."
 
 mkdir -p /tmp
 
-curl -L \
-  "https://drive.usercontent.google.com/download?id=1tiGT8NU3eUkfU956kkQilYwuK2kUCnC3&export=download&confirm=t&uuid=3ad22766-0f54-48b6-bfd2-de26be6d9383" \
-  -o /tmp/qt-6.5.8-arm64.tar.gz
+curl -L 
+"https://drive.usercontent.google.com/download?id=1tiGT8NU3eUkfU956kkQilYwuK2kUCnC3&export=download&confirm=t&uuid=3ad22766-0f54-48b6-bfd2-de26be6d9383" 
+-o /tmp/qt-6.5.8-arm64.tar.gz
 
+rm -rf /tmp/qt65
 tar -xzf /tmp/qt-6.5.8-arm64.tar.gz -C /tmp
 
-export Qt6_DIR="/tmp/qt65/lib/cmake/Qt6"
+# Qt paths
+
+export CMAKE_PREFIX_PATH=/tmp/qt65
+
+export Qt6_DIR=/tmp/qt65/lib/cmake/Qt6
+export Qt6CoreTools_DIR=/tmp/qt65/lib/cmake/Qt6CoreTools
+export Qt6WidgetsTools_DIR=/tmp/qt65/lib/cmake/Qt6WidgetsTools
+export Qt6DBusTools_DIR=/tmp/qt65/lib/cmake/Qt6DBusTools
 
 echo "Qt6_DIR=$Qt6_DIR"
+echo "CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH"
 
-ls "$Qt6_DIR"
+# Debug Qt
 
-export Qt6_DIR="/tmp/qt65/lib/cmake/Qt6"
+find /tmp/qt65/lib/cmake -maxdepth 1 -type d | sort
+
+# SDL
+
 export SDL3_DIR="$BREW_PATH/opt/sdl3/lib/cmake/SDL3"
 
+# LLVM
+
 export PATH="/opt/homebrew/opt/llvm@$LLVM_COMPILER_VER/bin:$PATH"
-export LDFLAGS="-L$BREW_PATH/opt/llvm@$LLVM_COMPILER_VER/lib/c++ -L$BREW_PATH/opt/llvm@$LLVM_COMPILER_VER/lib/unwind -lunwind"
 
-export VULKAN_SDK
-VULKAN_SDK="$BREW_PATH/opt/molten-vk"
-ln -s "$BREW_PATH/opt/vulkan-loader/lib/libvulkan.dylib" "$VULKAN_SDK/lib/libvulkan.dylib"
+export LDFLAGS="-L$BREW_PATH/opt/llvm@$LLVM_COMPILER_VER/lib/c++ 
+-L$BREW_PATH/opt/llvm@$LLVM_COMPILER_VER/lib/unwind 
+-lunwind"
 
-export LLVM_DIR
-LLVM_DIR="$BREW_PATH/opt/llvm@$LLVM_COMPILER_VER"
-# Pull all the submodules except some
-# shellcheck disable=SC2046
-git submodule -q update --init --depth=1 --jobs=8 $(awk '/path/ && !/llvm/ && !/opencv/ && !/SDL/ && !/feralinteractive/ { print $3 }' .gitmodules)
+export LLVM_DIR="$BREW_PATH/opt/llvm@$LLVM_COMPILER_VER"
 
-mkdir build && cd build || exit 1
+# Vulkan / MoltenVK
+
+export VULKAN_SDK="$BREW_PATH/opt/molten-vk"
+
+ln -sf 
+"$BREW_PATH/opt/vulkan-loader/lib/libvulkan.dylib" 
+"$VULKAN_SDK/lib/libvulkan.dylib"
+
+# Submodules
+
+git submodule -q update --init --depth=1 --jobs=8 
+$(awk '/path/ && !/llvm/ && !/opencv/ && !/SDL/ && !/feralinteractive/ { print $3 }' .gitmodules)
+
+mkdir -p build
+cd build
 
 if [ "$AARCH64" -eq 1 ]; then
-cmake .. \
-    -DBUILD_RPCS3_TESTS="${RUN_UNIT_TESTS}" \
-    -DRUN_RPCS3_TESTS="${RUN_UNIT_TESTS}" \
-    -DQt6_DIR="$Qt6_DIR" \
-    -DSDL3_DIR="$SDL3_DIR" \
-    -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 \
-    -DCMAKE_OSX_ARCHITECTURES=arm64
-    -DCMAKE_OSX_SYSROOT="$(xcrun --sdk macosx --show-sdk-path)" \
-    -DMACOSX_BUNDLE_SHORT_VERSION_STRING="${COMM_TAG}" \
-    -DMACOSX_BUNDLE_BUNDLE_VERSION="${COMM_COUNT}" \
-    -DSTATIC_LINK_LLVM=ON \
-    -DUSE_SDL=ON \
-    -DUSE_DISCORD_RPC=ON \
-    -DUSE_AUDIOUNIT=ON \
-    -DUSE_SYSTEM_FFMPEG=OFF \
-    -DUSE_NATIVE_INSTRUCTIONS=OFF \
-    -DUSE_PRECOMPILED_HEADERS=OFF \
-    -DUSE_SYSTEM_MVK=ON \
-    -DUSE_SYSTEM_SDL=ON \
-    -DUSE_SYSTEM_OPENCV=ON \
-    -G Ninja
+
+cmake .. 
+-DCMAKE_PREFIX_PATH=/tmp/qt65 
+-DQt6_DIR="$Qt6_DIR" 
+-DQt6CoreTools_DIR="$Qt6CoreTools_DIR" 
+-DQt6WidgetsTools_DIR="$Qt6WidgetsTools_DIR" 
+-DQt6DBusTools_DIR="$Qt6DBusTools_DIR" 
+-DSDL3_DIR="$SDL3_DIR" 
+-DBUILD_RPCS3_TESTS="${RUN_UNIT_TESTS}" 
+-DRUN_RPCS3_TESTS="${RUN_UNIT_TESTS}" 
+-DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 
+-DCMAKE_OSX_ARCHITECTURES=arm64 
+-DCMAKE_OSX_SYSROOT="$(xcrun --sdk macosx --show-sdk-path)" 
+-DMACOSX_BUNDLE_SHORT_VERSION_STRING="${COMM_TAG}" 
+-DMACOSX_BUNDLE_BUNDLE_VERSION="${COMM_COUNT}" 
+-DSTATIC_LINK_LLVM=ON 
+-DUSE_SDL=ON 
+-DUSE_DISCORD_RPC=ON 
+-DUSE_AUDIOUNIT=ON 
+-DUSE_SYSTEM_FFMPEG=OFF 
+-DUSE_NATIVE_INSTRUCTIONS=OFF 
+-DUSE_PRECOMPILED_HEADERS=OFF 
+-DUSE_SYSTEM_MVK=ON 
+-DUSE_SYSTEM_SDL=ON 
+-DUSE_SYSTEM_OPENCV=ON 
+-G Ninja
+
 else
-cmake .. \
-    -DBUILD_RPCS3_TESTS=OFF \
-    -DRUN_RPCS3_TESTS=OFF \
-    -DCMAKE_OSX_ARCHITECTURES=x86_64 \
-    -DCMAKE_SYSTEM_PROCESSOR=x86_64 \
-    -DCMAKE_TOOLCHAIN_FILE=buildfiles/cmake/TCDarwinX86_64.cmake \
-    -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 \
-    -DCMAKE_OSX_SYSROOT="$(xcrun --sdk macosx --show-sdk-path)" \
-    -DMACOSX_BUNDLE_SHORT_VERSION_STRING="${COMM_TAG}" \
-    -DMACOSX_BUNDLE_BUNDLE_VERSION="${COMM_COUNT}"\
-    -DSTATIC_LINK_LLVM=ON \
-    -DUSE_SDL=ON \
-    -DUSE_DISCORD_RPC=ON \
-    -DUSE_AUDIOUNIT=ON \
-    -DUSE_SYSTEM_FFMPEG=OFF \
-    -DUSE_NATIVE_INSTRUCTIONS=OFF \
-    -DUSE_PRECOMPILED_HEADERS=OFF \
-    -DUSE_SYSTEM_MVK=ON \
-    -DUSE_SYSTEM_SDL=ON \
-    -DUSE_SYSTEM_OPENCV=ON \
-    -G Ninja
+
+cmake .. 
+-DCMAKE_PREFIX_PATH=/tmp/qt65 
+-DQt6_DIR="$Qt6_DIR" 
+-DBUILD_RPCS3_TESTS=OFF 
+-DRUN_RPCS3_TESTS=OFF 
+-DCMAKE_OSX_ARCHITECTURES=x86_64 
+-DCMAKE_SYSTEM_PROCESSOR=x86_64 
+-DCMAKE_TOOLCHAIN_FILE=buildfiles/cmake/TCDarwinX86_64.cmake 
+-DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 
+-DCMAKE_OSX_SYSROOT="$(xcrun --sdk macosx --show-sdk-path)" 
+-DMACOSX_BUNDLE_SHORT_VERSION_STRING="${COMM_TAG}" 
+-DMACOSX_BUNDLE_BUNDLE_VERSION="${COMM_COUNT}" 
+-DSTATIC_LINK_LLVM=ON 
+-DUSE_SDL=ON 
+-DUSE_DISCORD_RPC=ON 
+-DUSE_AUDIOUNIT=ON 
+-DUSE_SYSTEM_FFMPEG=OFF 
+-DUSE_NATIVE_INSTRUCTIONS=OFF 
+-DUSE_PRECOMPILED_HEADERS=OFF 
+-DUSE_SYSTEM_MVK=ON 
+-DUSE_SYSTEM_SDL=ON 
+-DUSE_SYSTEM_OPENCV=ON 
+-G Ninja
+
 fi
 
-ninja; build_status=$?;
+ninja
+build_status=$?
 
 cd ..
 
-# If it compiled succesfully let's deploy.
 if [ "$build_status" -eq 0 ]; then
-    .ci/deploy-mac.sh
+.ci/deploy-mac.sh
 fi

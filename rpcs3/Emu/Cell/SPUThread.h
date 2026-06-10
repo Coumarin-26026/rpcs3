@@ -548,7 +548,9 @@ public:
 	}
 
 	//Slice 0 or 1
-u8 checkSliceRounding(u8 slice) const
+default:
+    fmt::throw_exception("Unexpected slice value (%d)", slice);
+    return 0;
 {
     switch(slice)
     {

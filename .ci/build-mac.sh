@@ -27,6 +27,8 @@ LLVM_COMPILER_VER="${LLVM_COMPILER_VER:-19}"
 brew install -f --overwrite --quiet \
     ccache \
     "llvm@$LLVM_COMPILER_VER"
+    
+brew link -f --overwrite --quiet "llvm@$LLVM_COMPILER_VER"    
 
 if [ "$AARCH64" -eq 1 ]; then
     brew install -f --overwrite --quiet \
@@ -38,9 +40,6 @@ if [ "$AARCH64" -eq 1 ]; then
         molten-vk
 
     brew unlink --quiet ffmpeg fmt qtbase qtsvg qtdeclarative protobuf || true
-fi
-
-
 else
 arch -x86_64 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
@@ -56,8 +55,6 @@ arch -x86_64 /usr/local/bin/brew install -f --overwrite --quiet \
 
 arch -x86_64 /usr/local/bin/brew unlink --quiet \
     ffmpeg qtbase qtsvg qtdeclarative protobuf || true
-
-
 fi
 
 export CC=clang
@@ -146,7 +143,7 @@ cmake .. \
 -DUSE_SYSTEM_MVK=ON \
 -DUSE_SYSTEM_SDL=ON \
 -DUSE_SYSTEM_OPENCV=ON \
--G Ninja \
+-G Ninja
 else
 cmake .. \
 -DCMAKE_PREFIX_PATH=/tmp/qt65 \
@@ -170,7 +167,7 @@ cmake .. \
 -DUSE_SYSTEM_MVK=ON \
 -DUSE_SYSTEM_SDL=ON \
 -DUSE_SYSTEM_OPENCV=ON \
--G Ninja \
+-G Ninja
 fi
 
 ninja

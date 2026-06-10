@@ -24,9 +24,9 @@ brew update
 
 LLVM_COMPILER_VER="${LLVM_COMPILER_VER:-19}"
 
-brew install -f --overwrite --quiet 
-ccache 
-"llvm@$LLVM_COMPILER_VER"
+brew install -f --overwrite --quiet \
+    ccache \
+    "llvm@$LLVM_COMPILER_VER"
 
 brew link -f --overwrite --quiet "llvm@$LLVM_COMPILER_VER"
 
@@ -39,14 +39,14 @@ vulkan-headers
 vulkan-loader 
 molten-vk
 
-```
+
 brew unlink --quiet ffmpeg fmt qtbase qtsvg qtdeclarative protobuf || true
-```
+
 
 else
 arch -x86_64 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-```
+
 arch -x86_64 /usr/local/bin/brew install -f --overwrite --quiet \
     python@3.14 \
     opencv@4 \
@@ -58,7 +58,7 @@ arch -x86_64 /usr/local/bin/brew install -f --overwrite --quiet \
 
 arch -x86_64 /usr/local/bin/brew unlink --quiet \
     ffmpeg qtbase qtsvg qtdeclarative protobuf || true
-```
+
 
 fi
 
@@ -84,9 +84,9 @@ echo "Downloading prebuilt Qt 6.5.8..."
 
 mkdir -p /tmp
 
-curl -L 
-"https://drive.usercontent.google.com/download?id=1tiGT8NU3eUkfU956kkQilYwuK2kUCnC3&export=download&confirm=t&uuid=3ad22766-0f54-48b6-bfd2-de26be6d9383" 
--o /tmp/qt-6.5.8-arm64.tar.gz
+curl -L \
+    "https://drive.usercontent.google.com/download?id=1tiGT8NU3eUkfU956kkQilYwuK2kUCnC3&export=download&confirm=t&uuid=3ad22766-0f54-48b6-bfd2-de26be6d9383" \
+    -o /tmp/qt-6.5.8-arm64.tar.gz
 
 rm -rf /tmp/qt65
 tar -xzf /tmp/qt-6.5.8-arm64.tar.gz -C /tmp
@@ -113,66 +113,66 @@ export LLVM_DIR="$BREW_PATH/opt/llvm@$LLVM_COMPILER_VER"
 
 export VULKAN_SDK="$BREW_PATH/opt/molten-vk"
 
-ln -sf 
-"$BREW_PATH/opt/vulkan-loader/lib/libvulkan.dylib" 
-"$VULKAN_SDK/lib/libvulkan.dylib"
+ln -sf \
+    "$BREW_PATH/opt/vulkan-loader/lib/libvulkan.dylib" \
+    "$VULKAN_SDK/lib/libvulkan.dylib"
 
-git submodule -q update --init --depth=1 --jobs=8 
+git submodule -q update --init --depth=1 --jobs=8 \
 $(awk '/path/ && !/llvm/ && !/opencv/ && !/SDL/ && !/feralinteractive/ { print $3 }' .gitmodules)
 
 mkdir -p build
 cd build
 
 if [ "$AARCH64" -eq 1 ]; then
-cmake .. 
--DCMAKE_PREFIX_PATH=/tmp/qt65 
--DQt6_DIR="$Qt6_DIR" 
--DQt6CoreTools_DIR="$Qt6CoreTools_DIR" 
--DQt6WidgetsTools_DIR="$Qt6WidgetsTools_DIR" 
--DQt6DBusTools_DIR="$Qt6DBusTools_DIR" 
--DSDL3_DIR="$SDL3_DIR" 
--DBUILD_RPCS3_TESTS="${RUN_UNIT_TESTS}" 
--DRUN_RPCS3_TESTS="${RUN_UNIT_TESTS}" 
--DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 
--DCMAKE_OSX_ARCHITECTURES=arm64 
--DCMAKE_OSX_SYSROOT="$(xcrun --sdk macosx --show-sdk-path)" 
--DMACOSX_BUNDLE_SHORT_VERSION_STRING="${COMM_TAG}" 
--DMACOSX_BUNDLE_BUNDLE_VERSION="${COMM_COUNT}" 
--DSTATIC_LINK_LLVM=ON 
--DUSE_SDL=ON 
--DUSE_DISCORD_RPC=ON 
--DUSE_AUDIOUNIT=ON 
--DUSE_SYSTEM_FFMPEG=OFF 
--DUSE_NATIVE_INSTRUCTIONS=OFF 
--DUSE_PRECOMPILED_HEADERS=OFF 
--DUSE_SYSTEM_MVK=ON 
--DUSE_SYSTEM_SDL=ON 
--DUSE_SYSTEM_OPENCV=ON 
--G Ninja
+cmake .. \
+-DCMAKE_PREFIX_PATH=/tmp/qt65 \
+-DQt6_DIR="$Qt6_DIR" \
+-DQt6CoreTools_DIR="$Qt6CoreTools_DIR" \
+-DQt6WidgetsTools_DIR="$Qt6WidgetsTools_DIR" \
+-DQt6DBusTools_DIR="$Qt6DBusTools_DIR" \
+-DSDL3_DIR="$SDL3_DIR" \
+-DBUILD_RPCS3_TESTS="${RUN_UNIT_TESTS}" \
+-DRUN_RPCS3_TESTS="${RUN_UNIT_TESTS}" \
+-DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 \
+-DCMAKE_OSX_ARCHITECTURES=arm64 \
+-DCMAKE_OSX_SYSROOT="$(xcrun --sdk macosx --show-sdk-path)" \
+-DMACOSX_BUNDLE_SHORT_VERSION_STRING="${COMM_TAG}" \
+-DMACOSX_BUNDLE_BUNDLE_VERSION="${COMM_COUNT}" \
+-DSTATIC_LINK_LLVM=ON \
+-DUSE_SDL=ON \
+-DUSE_DISCORD_RPC=ON \
+-DUSE_AUDIOUNIT=ON \
+-DUSE_SYSTEM_FFMPEG=OFF \
+-DUSE_NATIVE_INSTRUCTIONS=OFF \
+-DUSE_PRECOMPILED_HEADERS=OFF \
+-DUSE_SYSTEM_MVK=ON \
+-DUSE_SYSTEM_SDL=ON \
+-DUSE_SYSTEM_OPENCV=ON \
+-G Ninja \
 else
-cmake .. 
--DCMAKE_PREFIX_PATH=/tmp/qt65 
--DQt6_DIR="$Qt6_DIR" 
--DBUILD_RPCS3_TESTS=OFF 
--DRUN_RPCS3_TESTS=OFF 
--DCMAKE_OSX_ARCHITECTURES=x86_64 
--DCMAKE_SYSTEM_PROCESSOR=x86_64 
--DCMAKE_TOOLCHAIN_FILE=buildfiles/cmake/TCDarwinX86_64.cmake 
--DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 
--DCMAKE_OSX_SYSROOT="$(xcrun --sdk macosx --show-sdk-path)" 
--DMACOSX_BUNDLE_SHORT_VERSION_STRING="${COMM_TAG}" 
--DMACOSX_BUNDLE_BUNDLE_VERSION="${COMM_COUNT}" 
--DSTATIC_LINK_LLVM=ON 
--DUSE_SDL=ON 
--DUSE_DISCORD_RPC=ON 
--DUSE_AUDIOUNIT=ON 
--DUSE_SYSTEM_FFMPEG=OFF 
--DUSE_NATIVE_INSTRUCTIONS=OFF 
--DUSE_PRECOMPILED_HEADERS=OFF 
--DUSE_SYSTEM_MVK=ON 
--DUSE_SYSTEM_SDL=ON 
--DUSE_SYSTEM_OPENCV=ON 
--G Ninja
+cmake .. \
+-DCMAKE_PREFIX_PATH=/tmp/qt65 \
+-DQt6_DIR="$Qt6_DIR" \
+-DBUILD_RPCS3_TESTS=OFF \
+-DRUN_RPCS3_TESTS=OFF \
+-DCMAKE_OSX_ARCHITECTURES=x86_64 \
+-DCMAKE_SYSTEM_PROCESSOR=x86_64 \
+-DCMAKE_TOOLCHAIN_FILE=buildfiles/cmake/TCDarwinX86_64.cmake \
+-DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 \
+-DCMAKE_OSX_SYSROOT="$(xcrun --sdk macosx --show-sdk-path)" \
+-DMACOSX_BUNDLE_SHORT_VERSION_STRING="${COMM_TAG}" \
+-DMACOSX_BUNDLE_BUNDLE_VERSION="${COMM_COUNT}" \
+-DSTATIC_LINK_LLVM=ON \
+-DUSE_SDL=ON \
+-DUSE_DISCORD_RPC=ON \
+-DUSE_AUDIOUNIT=ON \
+-DUSE_SYSTEM_FFMPEG=OFF \
+-DUSE_NATIVE_INSTRUCTIONS=OFF \
+-DUSE_PRECOMPILED_HEADERS=OFF \
+-DUSE_SYSTEM_MVK=ON \
+-DUSE_SYSTEM_SDL=ON \
+-DUSE_SYSTEM_OPENCV=ON \
+-G Ninja \
 fi
 
 ninja

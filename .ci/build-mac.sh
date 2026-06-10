@@ -87,6 +87,8 @@ if [ "$AARCH64" -eq 1 ]; then
 cmake .. \
     -DBUILD_RPCS3_TESTS="${RUN_UNIT_TESTS}" \
     -DRUN_RPCS3_TESTS="${RUN_UNIT_TESTS}" \
+    -DQt6_DIR="$Qt6_DIR" \
+    -DSDL3_DIR="$SDL3_DIR" \
     -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 \
     -DCMAKE_OSX_ARCHITECTURES=arm64
     -DCMAKE_OSX_SYSROOT="$(xcrun --sdk macosx --show-sdk-path)" \

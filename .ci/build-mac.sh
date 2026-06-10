@@ -28,19 +28,17 @@ brew install -f --overwrite --quiet \
     ccache \
     "llvm@$LLVM_COMPILER_VER"
 
-brew link -f --overwrite --quiet "llvm@$LLVM_COMPILER_VER"
-
 if [ "$AARCH64" -eq 1 ]; then
-brew install -f --overwrite --quiet 
-googletest 
-opencv@4 
-sdl3 
-vulkan-headers 
-vulkan-loader 
-molten-vk
+    brew install -f --overwrite --quiet \
+        googletest \
+        opencv@4 \
+        sdl3 \
+        vulkan-headers \
+        vulkan-loader \
+        molten-vk
 
-
-brew unlink --quiet ffmpeg fmt qtbase qtsvg qtdeclarative protobuf || true
+    brew unlink --quiet ffmpeg fmt qtbase qtsvg qtdeclarative protobuf || true
+fi
 
 
 else

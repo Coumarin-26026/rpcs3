@@ -1,3 +1,8 @@
+cmake_minimum_required(VERSION 3.16)
+
+project(moltenvk NONE)
+include(ExternalProject)
+
 project(moltenvk NONE)
 include(ExternalProject)
 

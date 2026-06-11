@@ -133,8 +133,6 @@ mkdir -p build
 cd build
 
 cmake .. 
--DLLVM_DIR="$LLVM_DIR/lib/cmake/llvm" 
--DClang_DIR="$LLVM_DIR/lib/cmake/clang" 
 -DCMAKE_PREFIX_PATH=/tmp/qt65 
 -DQt6_DIR="$Qt6_DIR" 
 -DQt6CoreTools_DIR="$Qt6CoreTools_DIR" 

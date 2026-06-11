@@ -572,7 +572,9 @@ bool dmux_pamf_base::enable_es(u32 stream_id, u32 private_stream_id, bool is_avc
 	case DMUX_PAMF_STREAM_TYPE_INDEX_AC3:       elementary_streams[2][channel] = std::make_unique<audio_stream<true>>(channel, au_max_size, *this, user_data, au_queue_buffer); return true;
 	case DMUX_PAMF_STREAM_TYPE_INDEX_ATRACX:    elementary_streams[3][channel] = std::make_unique<audio_stream<false>>(channel, au_max_size, *this, user_data, au_queue_buffer); return true;
 	case DMUX_PAMF_STREAM_TYPE_INDEX_USER_DATA: elementary_streams[4][channel] = std::make_unique<user_data_stream>(channel, au_max_size, *this, user_data, au_queue_buffer); return true;
-	default: fmt::throw_exception("Unreachable");
+	default: 
+		fmt::throw_exception("Unreachable");
+		return false;
 	}
 }
 
@@ -2182,6 +2184,7 @@ error_code DmuxPamfContext::reset_stream(ppu_thread& ppu)
 
 	default:
 		fmt::throw_exception("Unexpected savestate value: 0x%x", savestate);
+		return CELL_DMUX_PAMF_ERROR_FATAL;
 	}
 }
 
@@ -2380,6 +2383,7 @@ error_code DmuxPamfElementaryStream::release_au(ppu_thread& ppu, vm::ptr<u8> au_
 
 	default:
 		fmt::throw_exception("Unexpected savestate value: 0x%x", savestate);
+		return CELL_DMUX_PAMF_ERROR_FATAL;
 	}
 }
 
@@ -2523,7 +2527,9 @@ error_code DmuxPamfContext::enable_es(ppu_thread& ppu, u16 stream_id, u16 privat
 				case CELL_DMUX_PAMF_AVC_LEVEL_3P1: return 0x54600u;
 				case CELL_DMUX_PAMF_AVC_LEVEL_3P2: return 0x78000u;
 				case CELL_DMUX_PAMF_AVC_LEVEL_4P1: return 0xc0000u;
-				default: fmt::throw_exception("Unreachable"); // es_specific_info was already checked for invalid values in dmuxPamfVerifyEsSpecificInfo()
+				default: 
+					fmt::throw_exception("Unreachable");
+					return 0;
 				}
 			}
 
@@ -2538,7 +2544,9 @@ error_code DmuxPamfContext::enable_es(ppu_thread& ppu, u16 stream_id, u16 privat
 		case DMUX_PAMF_STREAM_TYPE_INDEX_AC3:       return 0xf00u;
 		case DMUX_PAMF_STREAM_TYPE_INDEX_ATRACX:    return 0x1008u;
 		case DMUX_PAMF_STREAM_TYPE_INDEX_USER_DATA: return 0xa0000u;
-		default: fmt::throw_exception("Unreachable"); // stream_type was already checked
+		default: 
+			fmt::throw_exception("Unreachable");
+			return 0;
 		}
 	}();
 
@@ -2693,6 +2701,7 @@ error_code DmuxPamfElementaryStream::disable_es(ppu_thread& ppu)
 
 	default:
 		fmt::throw_exception("Unexpected savestate value: 0x%x", savestate);
+		return CELL_DMUX_PAMF_ERROR_FATAL;
 	}
 }
 

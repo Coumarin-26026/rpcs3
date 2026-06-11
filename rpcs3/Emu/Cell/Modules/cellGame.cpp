@@ -897,15 +897,23 @@ error_code cellGameDataCheck(u32 type, vm::cptr<char> dirName, vm::ptr<CellGameC
 
 	auto [sfo, psf_error] = psf::load(vfs::get(dir + "/PARAM.SFO"));
 
-	if (const std::string_view cat = psf::get_string(sfo, "CATEGORY"); [&]()
+	if (const std::string_view cat = psf::get_string(sfo, "CATEGORY"); [&]() -> bool
 	{
-		switch (type)
-		{
-		case CELL_GAME_GAMETYPE_HDD: return !psf::is_cat_hdd(cat);
-		case CELL_GAME_GAMETYPE_GAMEDATA: return cat != "GD"sv;
-		case CELL_GAME_GAMETYPE_DISC: return cat != "DG"sv;
-		default: fmt::throw_exception("Unreachable");
-		}
+	    switch (type)
+	    {
+	    case CELL_GAME_GAMETYPE_HDD:
+	        return !psf::is_cat_hdd(cat);
+	
+	    case CELL_GAME_GAMETYPE_GAMEDATA:
+	        return cat != "GD"sv;
+	
+	    case CELL_GAME_GAMETYPE_DISC:
+	        return cat != "DG"sv;
+	
+	    default:
+	        fmt::throw_exception("Unreachable");
+	        return false;
+	    }
 	}())
 	{
 		if (psf_error != psf::error::stream)

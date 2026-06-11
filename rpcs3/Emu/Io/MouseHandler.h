@@ -61,7 +61,9 @@ static inline MouseButtonCodes get_mouse_button_code(int i)
 	case 5:	return CELL_MOUSE_BUTTON_6;
 	case 6:	return CELL_MOUSE_BUTTON_7;
 	case 7:	return CELL_MOUSE_BUTTON_8;
-	default: fmt::throw_exception("get_mouse_button_code: Invalid index %d", i);
+	default: 
+		fmt::throw_exception("get_mouse_button_code: Invalid index %d", i);
+		return CELL_MOUSE_BUTTON_1;
 	}
 }
 

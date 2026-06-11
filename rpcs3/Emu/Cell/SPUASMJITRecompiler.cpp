@@ -936,6 +936,7 @@ spu_recompiler::XmmLink spu_recompiler::XmmAlloc() // get empty xmm register
 	}
 
 	fmt::throw_exception("Out of Xmm Vars");
+	return {};
 }
 
 spu_recompiler::XmmLink spu_recompiler::XmmGet(s8 reg, XmmType type) // get xmm register with specific SPU reg

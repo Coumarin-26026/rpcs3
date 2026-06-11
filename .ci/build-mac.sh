@@ -22,13 +22,7 @@ brew update
 
 # Fallback nếu biến không tồn tại
 
-LLVM_COMPILER_VER="${LLVM_COMPILER_VER:-19}"
-
-brew install -f --overwrite --quiet \
-    ccache \
-    "llvm@$LLVM_COMPILER_VER"
-    
-brew link -f --overwrite --quiet "llvm@$LLVM_COMPILER_VER"    
+brew install -f --overwrite --quiet ccache   
 
 if [ "$AARCH64" -eq 1 ]; then
     brew install -f --overwrite --quiet \
@@ -73,6 +67,29 @@ fi
 WORKDIR="$(pwd)"
 export WORKDIR
 
+echo "Downloading LLVM 19.1.0..."
+
+curl -L \
+"https://drive.usercontent.google.com/download?id=1VqGI4QH4p2j0Ldg_2zDvvF_tu6qOHzqA&export=download&confirm=t" \
+-o /tmp/llvm19.tar.gz
+
+rm -rf /tmp/llvm19
+mkdir -p /tmp/llvm19
+
+tar -xzf /tmp/llvm19.tar.gz -C /tmp/llvm19
+
+LLVM_ROOT="$(find /tmp/llvm19 -maxdepth 1 -type d -name 'LLVM-*' | head -1)"
+
+echo "LLVM_ROOT=$LLVM_ROOT"
+
+export LLVM_DIR="$LLVM_ROOT"
+export CC="$LLVM_ROOT/bin/clang"
+export CXX="$LLVM_ROOT/bin/clang++"
+
+export PATH="$LLVM_ROOT/bin:$PATH"
+
+export LDFLAGS="-L$LLVM_ROOT/lib"
+
 mkdir -p "$CCACHE_DIR"
 
 echo "Downloading prebuilt Qt 6.5.8..."
@@ -100,12 +117,6 @@ find /tmp/qt65/lib/cmake -maxdepth 1 -type d | sort
 
 export SDL3_DIR="$BREW_PATH/opt/sdl3/lib/cmake/SDL3"
 
-export PATH="$BREW_PATH/opt/llvm@$LLVM_COMPILER_VER/bin:$PATH"
-
-export LDFLAGS="-L$BREW_PATH/opt/llvm@$LLVM_COMPILER_VER/lib/c++ -L$BREW_PATH/opt/llvm@$LLVM_COMPILER_VER/lib/unwind -lunwind"
-
-export LLVM_DIR="$BREW_PATH/opt/llvm@$LLVM_COMPILER_VER"
-
 export VULKAN_SDK="$BREW_PATH/opt/molten-vk"
 
 ln -sf \
@@ -120,6 +131,8 @@ cd build
 
 if [ "$AARCH64" -eq 1 ]; then
 cmake .. \
+-DLLVM_DIR="$LLVM_DIR/lib/cmake/llvm"
+-DClang_DIR="$LLVM_DIR/lib/cmake/clang"
 -DCMAKE_PREFIX_PATH=/tmp/qt65 \
 -DQt6_DIR="$Qt6_DIR" \
 -DQt6CoreTools_DIR="$Qt6CoreTools_DIR" \
@@ -144,31 +157,6 @@ cmake .. \
 -DUSE_SYSTEM_SDL=ON \
 -DUSE_SYSTEM_OPENCV=ON \
 -G Ninja
-else
-cmake .. \
--DCMAKE_PREFIX_PATH=/tmp/qt65 \
--DQt6_DIR="$Qt6_DIR" \
--DBUILD_RPCS3_TESTS=OFF \
--DRUN_RPCS3_TESTS=OFF \
--DCMAKE_OSX_ARCHITECTURES=x86_64 \
--DCMAKE_SYSTEM_PROCESSOR=x86_64 \
--DCMAKE_TOOLCHAIN_FILE=buildfiles/cmake/TCDarwinX86_64.cmake \
--DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 \
--DCMAKE_OSX_SYSROOT="$(xcrun --sdk macosx --show-sdk-path)" \
--DMACOSX_BUNDLE_SHORT_VERSION_STRING="${COMM_TAG}" \
--DMACOSX_BUNDLE_BUNDLE_VERSION="${COMM_COUNT}" \
--DSTATIC_LINK_LLVM=ON \
--DUSE_SDL=ON \
--DUSE_DISCORD_RPC=ON \
--DUSE_AUDIOUNIT=ON \
--DUSE_SYSTEM_FFMPEG=OFF \
--DUSE_NATIVE_INSTRUCTIONS=OFF \
--DUSE_PRECOMPILED_HEADERS=OFF \
--DUSE_SYSTEM_MVK=ON \
--DUSE_SYSTEM_SDL=ON \
--DUSE_SYSTEM_OPENCV=ON \
--G Ninja
-fi
 
 ninja
 build_status=$?

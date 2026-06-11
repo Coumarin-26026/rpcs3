@@ -2975,6 +2975,7 @@ std::pair<vm::addr_t, u32> ppu_thread::stack_push(u32 size, u32 align_v)
 	}
 
 	fmt::throw_exception("Invalid thread");
+	return {};
 }
 
 void ppu_thread::stack_pop_verbose(u32 addr, u32 size) noexcept

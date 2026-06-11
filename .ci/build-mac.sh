@@ -162,12 +162,7 @@ cmake .. \
 -DUSE_SYSTEM_MVK=ON \
 -DUSE_SYSTEM_SDL=ON \
 -DUSE_SYSTEM_OPENCV=ON \
--DCMAKE_CXX_FLAGS="
--Wno-error
--Wno-return-type
--Wno-implicit-fallthrough
--Wno-inconsistent-missing-override
-" \
+-DCMAKE_CXX_FLAGS="-Wno-error" \
 -G Ninja
 
 

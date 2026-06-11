@@ -67,28 +67,27 @@ fi
 WORKDIR="$(pwd)"
 export WORKDIR
 
-echo "Downloading LLVM 19.1.0..."
+# LLVM 19.1.0
+if [ ! -d /tmp/llvm19 ]; then
+    echo "Downloading LLVM 19.1.0..."
 
-curl -L \
-"https://drive.usercontent.google.com/download?id=1VqGI4QH4p2j0Ldg_2zDvvF_tu6qOHzqA&export=download&confirm=t" \
--o /tmp/llvm19.tar.gz
+    curl -L \
+    "https://drive.usercontent.google.com/download?id=1VqGI4QH4p2j0Ldg_2zDvvF_tu6qOHzqA&export=download&confirm=t" \
+    -o /tmp/llvm19.tar.gz
 
-rm -rf /tmp/llvm19
-mkdir -p /tmp/llvm19
+    rm -rf /tmp/llvm19
+    mkdir -p /tmp/llvm19
 
-tar -xzf /tmp/llvm19.tar.gz -C /tmp/llvm19
+    tar -xzf /tmp/llvm19.tar.gz -C /tmp/llvm19
+fi
 
 LLVM_ROOT="$(find /tmp/llvm19 -maxdepth 1 -type d -name 'LLVM-*' | head -1)"
-
-echo "LLVM_ROOT=$LLVM_ROOT"
 
 export LLVM_DIR="$LLVM_ROOT"
 export CC="$LLVM_ROOT/bin/clang"
 export CXX="$LLVM_ROOT/bin/clang++"
 
 export PATH="$LLVM_ROOT/bin:$PATH"
-
-export LDFLAGS="-L$LLVM_ROOT/lib"
 
 mkdir -p "$CCACHE_DIR"
 

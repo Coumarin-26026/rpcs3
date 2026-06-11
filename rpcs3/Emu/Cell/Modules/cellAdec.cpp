@@ -1282,7 +1282,9 @@ static vm::cptr<CellAdecCoreOps> get_core_ops(s32 type)
 {
 	switch (type)
 	{
-	case CELL_ADEC_TYPE_INVALID1:      fmt::throw_exception("Invalid audio codec: CELL_ADEC_TYPE_INVALID1");
+	case CELL_ADEC_TYPE_INVALID1:      
+		fmt::throw_exception("Invalid audio codec: CELL_ADEC_TYPE_INVALID3");
+		return {};
 	case CELL_ADEC_TYPE_LPCM_PAMF:     return g_cell_adec_core_ops_lpcm;
 	case CELL_ADEC_TYPE_AC3:           return vm::cptr<CellAdecCoreOps>::make(*ppu_module_manager::cell_libac3dec.variables.find(0xc58bb170)->second.export_addr);
 	case CELL_ADEC_TYPE_ATRACX:        return vm::cptr<CellAdecCoreOps>::make(*ppu_module_manager::cellAtracXdec.variables.find(0x4944af9a)->second.export_addr);
@@ -1308,14 +1310,25 @@ static vm::cptr<CellAdecCoreOps> get_core_ops(s32 type)
 	case CELL_ADEC_TYPE_MP3S:          return vm::cptr<CellAdecCoreOps>::make(*ppu_module_manager::cellMP3Sdec.variables.find(0x292cdf0a)->second.export_addr);
 	case CELL_ADEC_TYPE_M4AAC_2CH_MOD: return vm::cptr<CellAdecCoreOps>::make(*ppu_module_manager::cellM4AacDec2chmod.variables.find(0xdbd26836)->second.export_addr);
 	case CELL_ADEC_TYPE_CELP8:         return vm::cptr<CellAdecCoreOps>::make(*ppu_module_manager::cellCelp8Dec.variables.find(0xf0190c6c)->second.export_addr);
-	case CELL_ADEC_TYPE_INVALID2:      fmt::throw_exception("Invalid audio codec: CELL_ADEC_TYPE_INVALID2");
-	case CELL_ADEC_TYPE_INVALID3:      fmt::throw_exception("Invalid audio codec: CELL_ADEC_TYPE_INVALID3");
-	case CELL_ADEC_TYPE_RESERVED22:    fmt::throw_exception("Invalid audio codec: CELL_ADEC_TYPE_RESERVED22");
-	case CELL_ADEC_TYPE_RESERVED23:    fmt::throw_exception("Invalid audio codec: CELL_ADEC_TYPE_RESERVED23");
+	case CELL_ADEC_TYPE_INVALID2:      
+		fmt::throw_exception("Invalid audio codec: CELL_ADEC_TYPE_INVALID2");
+		return {};
+	case CELL_ADEC_TYPE_INVALID3:      
+		fmt::throw_exception("Invalid audio codec: CELL_ADEC_TYPE_INVALID3");
+		return {};
+	case CELL_ADEC_TYPE_RESERVED22:    
+		fmt::throw_exception("Invalid audio codec: CELL_ADEC_TYPE_RESERVED22");
+		return {};
+	case CELL_ADEC_TYPE_RESERVED23:    
+		fmt::throw_exception("Invalid audio codec: CELL_ADEC_TYPE_RESERVED23");
+		return {};
 	case CELL_ADEC_TYPE_DTSHDCORE:     return vm::cptr<CellAdecCoreOps>::make(*ppu_module_manager::cellDTSHDCOREdec.variables.find(0x6c8f4f1c)->second.export_addr);
 	case CELL_ADEC_TYPE_ATRAC3MULTI:   return vm::cptr<CellAdecCoreOps>::make(*ppu_module_manager::cellAtrac3multidec.variables.find(0xc20c6bd7)->second.export_addr);
-	default:                           fmt::throw_exception("Invalid audio codec: %d", type);
+	default:                           
+		fmt::throw_exception("Invalid audio codec: %d", type);
+		return {};
 	}
+	return {};
 }
 
 error_code adecNotifyAuDone(ppu_thread& ppu, s32 pcmHandle, vm::ptr<AdecContext> handle)

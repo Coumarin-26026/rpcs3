@@ -51,8 +51,6 @@ arch -x86_64 /usr/local/bin/brew unlink --quiet \
     ffmpeg qtbase qtsvg qtdeclarative protobuf || true
 fi
 
-export CC=clang
-export CXX=clang++
 
 if [ "$AARCH64" -eq 1 ]; then
 BREW_PATH="$(brew --prefix)"
@@ -83,13 +81,21 @@ fi
 
 LLVM_ROOT="$(find /tmp/llvm19 -maxdepth 1 -type d -name 'LLVM-*' | head -1)"
 
+echo "LLVM_ROOT=$LLVM_ROOT"
+
+"$LLVM_ROOT/bin/clang" --version
+"$LLVM_ROOT/bin/clang++" --version
+
 rm -f "$LLVM_ROOT/lib/libc++.1.0.dylib"
 rm -f "$LLVM_ROOT/lib/libc++abi.dylib"
 rm -f "$LLVM_ROOT/lib/libunwind.1.dylib"
 
 export LLVM_DIR="$LLVM_ROOT"
-export CC=clang
-export CXX=clang++
+
+export CC="$LLVM_ROOT/bin/clang"
+export CXX="$LLVM_ROOT/bin/clang++"
+
+export PATH="$LLVM_ROOT/bin:$PATH"
 
 
 mkdir -p "$CCACHE_DIR"
@@ -128,6 +134,7 @@ ln -sf \
 git submodule -q update --init --depth=1 --jobs=8 \
 $(awk '/path/ && !/llvm/ && !/opencv/ && !/SDL/ && !/feralinteractive/ { print $3 }' .gitmodules)
 
+rm -rf build
 mkdir -p build
 cd build
 

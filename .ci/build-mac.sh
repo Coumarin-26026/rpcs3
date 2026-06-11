@@ -128,33 +128,32 @@ $(awk '/path/ && !/llvm/ && !/opencv/ && !/SDL/ && !/feralinteractive/ { print $
 mkdir -p build
 cd build
 
-if [ "$AARCH64" -eq 1 ]; then
-cmake .. \
--DLLVM_DIR="$LLVM_DIR/lib/cmake/llvm"
--DClang_DIR="$LLVM_DIR/lib/cmake/clang"
--DCMAKE_PREFIX_PATH=/tmp/qt65 \
--DQt6_DIR="$Qt6_DIR" \
--DQt6CoreTools_DIR="$Qt6CoreTools_DIR" \
--DQt6WidgetsTools_DIR="$Qt6WidgetsTools_DIR" \
--DQt6DBusTools_DIR="$Qt6DBusTools_DIR" \
--DSDL3_DIR="$SDL3_DIR" \
--DBUILD_RPCS3_TESTS="${RUN_UNIT_TESTS}" \
--DRUN_RPCS3_TESTS="${RUN_UNIT_TESTS}" \
--DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 \
--DCMAKE_OSX_ARCHITECTURES=arm64 \
--DCMAKE_OSX_SYSROOT="$(xcrun --sdk macosx --show-sdk-path)" \
--DMACOSX_BUNDLE_SHORT_VERSION_STRING="${COMM_TAG}" \
--DMACOSX_BUNDLE_BUNDLE_VERSION="${COMM_COUNT}" \
--DSTATIC_LINK_LLVM=ON \
--DUSE_SDL=ON \
--DUSE_DISCORD_RPC=ON \
--DUSE_AUDIOUNIT=ON \
--DUSE_SYSTEM_FFMPEG=OFF \
--DUSE_NATIVE_INSTRUCTIONS=OFF \
--DUSE_PRECOMPILED_HEADERS=OFF \
--DUSE_SYSTEM_MVK=ON \
--DUSE_SYSTEM_SDL=ON \
--DUSE_SYSTEM_OPENCV=ON \
+cmake .. 
+-DLLVM_DIR="$LLVM_DIR/lib/cmake/llvm" 
+-DClang_DIR="$LLVM_DIR/lib/cmake/clang" 
+-DCMAKE_PREFIX_PATH=/tmp/qt65 
+-DQt6_DIR="$Qt6_DIR" 
+-DQt6CoreTools_DIR="$Qt6CoreTools_DIR" 
+-DQt6WidgetsTools_DIR="$Qt6WidgetsTools_DIR" 
+-DQt6DBusTools_DIR="$Qt6DBusTools_DIR" 
+-DSDL3_DIR="$SDL3_DIR" 
+-DBUILD_RPCS3_TESTS="${RUN_UNIT_TESTS}" 
+-DRUN_RPCS3_TESTS="${RUN_UNIT_TESTS}" 
+-DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 
+-DCMAKE_OSX_ARCHITECTURES=arm64 
+-DCMAKE_OSX_SYSROOT="$(xcrun --sdk macosx --show-sdk-path)" 
+-DMACOSX_BUNDLE_SHORT_VERSION_STRING="${COMM_TAG}" 
+-DMACOSX_BUNDLE_BUNDLE_VERSION="${COMM_COUNT}" 
+-DSTATIC_LINK_LLVM=ON 
+-DUSE_SDL=ON 
+-DUSE_DISCORD_RPC=ON 
+-DUSE_AUDIOUNIT=ON 
+-DUSE_SYSTEM_FFMPEG=OFF 
+-DUSE_NATIVE_INSTRUCTIONS=OFF 
+-DUSE_PRECOMPILED_HEADERS=OFF 
+-DUSE_SYSTEM_MVK=ON 
+-DUSE_SYSTEM_SDL=ON 
+-DUSE_SYSTEM_OPENCV=ON 
 -G Ninja
 
 ninja
@@ -163,5 +162,5 @@ build_status=$?
 cd ..
 
 if [ "$build_status" -eq 0 ]; then
-.ci/deploy-mac.sh
+    .ci/deploy-mac.sh
 fi

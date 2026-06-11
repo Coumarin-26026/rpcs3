@@ -147,18 +147,34 @@ bool CubebBackend::Open(std::string_view dev_id, AudioFreq freq, AudioSampleSize
 	stream_param.layout = [&]()
 	{
 		switch (m_layout)
-		{
-		case audio_channel_layout::automatic:        break;
-		case audio_channel_layout::mono:             return CUBEB_LAYOUT_MONO;
-		case audio_channel_layout::stereo:           return CUBEB_LAYOUT_STEREO;
-		case audio_channel_layout::stereo_lfe:       return CUBEB_LAYOUT_STEREO_LFE;
-		case audio_channel_layout::quadraphonic:     return CUBEB_LAYOUT_QUAD;
-		case audio_channel_layout::quadraphonic_lfe: return CUBEB_LAYOUT_QUAD_LFE;
-		case audio_channel_layout::surround_5_1:     return CUBEB_LAYOUT_3F2_LFE;
-		case audio_channel_layout::surround_7_1:     return CUBEB_LAYOUT_3F4_LFE;
-		}
-
-		fmt::throw_exception("Invalid audio layout %d", static_cast<u32>(m_layout));
+	    {
+	    case audio_channel_layout::automatic:
+	        return CUBEB_LAYOUT_UNDEFINED;
+	
+	    case audio_channel_layout::mono:
+	        return CUBEB_LAYOUT_MONO;
+	
+	    case audio_channel_layout::stereo:
+	        return CUBEB_LAYOUT_STEREO;
+	
+	    case audio_channel_layout::stereo_lfe:
+	        return CUBEB_LAYOUT_STEREO_LFE;
+	
+	    case audio_channel_layout::quadraphonic:
+	        return CUBEB_LAYOUT_QUAD;
+	
+	    case audio_channel_layout::quadraphonic_lfe:
+	        return CUBEB_LAYOUT_QUAD_LFE;
+	
+	    case audio_channel_layout::surround_5_1:
+	        return CUBEB_LAYOUT_3F2_LFE;
+	
+	    case audio_channel_layout::surround_7_1:
+	        return CUBEB_LAYOUT_3F4_LFE;
+	    }
+	
+	    fmt::throw_exception("Invalid audio layout %d", static_cast<u32>(m_layout));
+	    return CUBEB_LAYOUT_UNDEFINED;
 	}();
 	stream_param.prefs = m_dev_collection_cb_enabled && device.handle ? CUBEB_STREAM_PREF_DISABLE_DEVICE_SWITCHING : CUBEB_STREAM_PREF_NONE;
 

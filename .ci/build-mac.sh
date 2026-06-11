@@ -162,7 +162,7 @@ cmake .. \
 -DUSE_SYSTEM_MVK=ON \
 -DUSE_SYSTEM_SDL=ON \
 -DUSE_SYSTEM_OPENCV=ON \
--DCMAKE_CXX_FLAGS="-Wno-error=return-type" \
+-D-DCMAKE_CXX_FLAGS="-Wno-error=return-type -Wno-return-type" \
 -G Ninja
 
 

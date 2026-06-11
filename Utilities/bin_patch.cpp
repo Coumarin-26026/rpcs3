@@ -792,8 +792,10 @@ bool patch_engine::add_patch_data(YAML::Node node, patch_info& info, u32 modifie
 	case patch_type::invalid:
 	case patch_type::load:
 	{
-		fmt::throw_exception("Unreachable patch type: %s", p_data.type);
+	    fmt::throw_exception("Unreachable patch type: %s", p_data.type);
+	    return false;
 	}
+	
 	case patch_type::bp_exec:
 	case patch_type::utf8:
 	case patch_type::c_utf8:
@@ -801,7 +803,7 @@ bool patch_engine::add_patch_data(YAML::Node node, patch_info& info, u32 modifie
 	case patch_type::move_file:
 	case patch_type::hide_file:
 	{
-		break;
+	    break;
 	}
 	case patch_type::bef32:
 	case patch_type::lef32:

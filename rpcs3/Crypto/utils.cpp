@@ -198,6 +198,7 @@ std::array<u8, PASSPHRASE_KEY_LEN> vtrm_get_laid_paid_from_type(int type)
 	case 3: return sc_combine_laid_paid(LAID_2, PAID_69);
 	default:
 		fmt::throw_exception("vtrm_get_laid_paid_from_type: Wrong type specified (type=%d)", type);
+    	return {};
 	}
 }
 
@@ -237,6 +238,7 @@ const u8* vtrm_portability_type_mapper(int type)
 	case 3: return SC_KEY_FOR_MASTER_2;
 	default:
 		fmt::throw_exception("vtrm_portability_type_mapper: Wrong type specified (type=%d)", type);
+    	return nullptr;
 	}
 }
 

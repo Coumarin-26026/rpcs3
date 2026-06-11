@@ -928,15 +928,21 @@ spu_function_t spu_recompiler::compile(spu_program&& _func)
 	return fn;
 }
 
-spu_recompiler::XmmLink spu_recompiler::XmmAlloc() // get empty xmm register
+spu_recompiler::XmmLink spu_recompiler::XmmAlloc()
 {
-	for (auto& v : vec)
-	{
-		if (v) return{ v };
-	}
+    for (auto& v : vec)
+    {
+        if (v)
+            return { v };
+    }
 
-	fmt::throw_exception("Out of Xmm Vars");
-	return {};
+    fmt::throw_exception("Out of Xmm Vars");
+
+#if defined(__clang__)
+    __builtin_unreachable();
+#else
+    std::abort();
+#endif
 }
 
 spu_recompiler::XmmLink spu_recompiler::XmmGet(s8 reg, XmmType type) // get xmm register with specific SPU reg

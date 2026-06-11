@@ -59,6 +59,12 @@ jobs:
           key: ${{ runner.os }}-ccache-${{ matrix.name }}-${{github.run_id}}
           restore-keys: ${{ runner.os }}-ccache-${{ matrix.name }}-
 
+      - name: Restore LLVM Cache
+        uses: actions/cache/restore@main
+        with:
+          path: /tmp/llvm19
+          key: llvm19-arm64    
+
 
       - name: Build
         run: .ci/build-mac.sh
@@ -93,3 +99,10 @@ jobs:
         with:
           path: ${{ env.CCACHE_DIR }}
           key: ${{ steps.restore-build-ccache.outputs.cache-primary-key }}
+
+      - name: Save LLVM Cache
+        if: github.ref == 'refs/heads/master'
+        uses: actions/cache/save@main
+        with:
+          path: /tmp/llvm19
+          key: llvm19-arm64    

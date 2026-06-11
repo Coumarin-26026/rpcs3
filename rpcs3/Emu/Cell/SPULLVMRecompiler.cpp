@@ -621,6 +621,7 @@ class spu_llvm_recompiler : public spu_recompiler_base, public cpu_translator
 			return get_type<u16>();
 		default:
 			fmt::throw_exception("get_reg_type(%u): invalid register index", index);
+			return nullptr;
 		}
 	}
 
@@ -639,6 +640,7 @@ class spu_llvm_recompiler : public spu_recompiler_base, public cpu_translator
 		case s_reg_mfc_size: return ::offset32(&spu_thread::ch_mfc_cmd, &spu_mfc_cmd::size);
 		default:
 			fmt::throw_exception("get_reg_offset(%u): invalid register index", index);
+			return 0;
 		}
 	}
 

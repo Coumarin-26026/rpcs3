@@ -213,7 +213,9 @@ u32 AudioBackend::default_layout_channel_count(audio_channel_layout layout)
 	case audio_channel_layout::quadraphonic_lfe: return 5;
 	case audio_channel_layout::surround_5_1: return 6;
 	case audio_channel_layout::surround_7_1: return 8;
-	default: fmt::throw_exception("Unsupported layout %d", static_cast<u32>(layout));
+	default:
+	    fmt::throw_exception("Unsupported layout %d", static_cast<u32>(layout));
+	    return 0;
 	}
 }
 

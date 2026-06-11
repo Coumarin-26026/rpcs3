@@ -547,18 +547,16 @@ public:
 		this->_u32[3] = (this->_u32[3] & ~(3 << shift)) | (roundTo << shift);
 	}
 
-	//Slice 0 or 1
-default:
-    fmt::throw_exception("Unexpected slice value (%d)", slice);
-    return 0;
+//Slice 0 or 1
+u8 checkSliceRounding(u8 slice) const
 {
-    switch(slice)
+    switch (slice)
     {
     case 0:
-        return this->_u32[3] >> 8 & 0x3;
+        return (this->_u32[3] >> 8) & 0x3;
 
     case 1:
-        return this->_u32[3] >> 10 & 0x3;
+        return (this->_u32[3] >> 10) & 0x3;
 
     default:
         fmt::throw_exception("Unexpected slice value (%d)", slice);

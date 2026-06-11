@@ -40,7 +40,6 @@ jobs:
       CCACHE_DIR: /tmp/ccache_dir
       QT_VER: '6.5.8'
       QT_VER_MAIN: '6'
-      LLVM_COMPILER_VER: '21'
       RELEASE_MESSAGE: ../GitHubReleaseMessage.txt
       UPLOAD_COMMIT_HASH: ${{ matrix.UPLOAD_COMMIT_HASH }}
       UPLOAD_REPO_FULL_NAME: ${{ matrix.UPLOAD_REPO_FULL_NAME }}
@@ -60,13 +59,6 @@ jobs:
           key: ${{ runner.os }}-ccache-${{ matrix.name }}-${{github.run_id}}
           restore-keys: ${{ runner.os }}-ccache-${{ matrix.name }}-
 
-      - name: Restore Qt Cache
-        uses: actions/cache/restore@main
-        id: restore-qt-cache
-        with:
-          path: /tmp/Qt
-          key: ${{ runner.os }}-qt-${{ matrix.name }}-${{ env.QT_VER }}
-          restore-keys: ${{ runner.os }}-qt-${{ matrix.name }}-${{ env.QT_VER }}
 
       - name: Build
         run: .ci/build-mac.sh
@@ -101,11 +93,3 @@ jobs:
         with:
           path: ${{ env.CCACHE_DIR }}
           key: ${{ steps.restore-build-ccache.outputs.cache-primary-key }}
-
-      - name: Save Qt Cache
-        if: github.ref == 'refs/heads/master'
-        uses: actions/cache/save@main
-        with:
-          path: /tmp/Qt
-          key: ${{ steps.restore-qt-cache.outputs.cache-primary-key }}
- 

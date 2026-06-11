@@ -91,7 +91,6 @@ export LLVM_DIR="$LLVM_ROOT"
 export CC=clang
 export CXX=clang++
 
-export PATH="$LLVM_ROOT/bin:$PATH"
 
 mkdir -p "$CCACHE_DIR"
 
@@ -156,6 +155,7 @@ cmake .. \
 -DUSE_SYSTEM_MVK=ON \
 -DUSE_SYSTEM_SDL=ON \
 -DUSE_SYSTEM_OPENCV=ON \
+-DCMAKE_CXX_FLAGS="-Wno-error=return-type" \
 -G Ninja
 
 

@@ -182,19 +182,21 @@ public:
 
 		static inline const gem_color& get_default_color(u32 gem_num)
 		{
-			static const gem_color gold = gem_color(1.0f, 0.85f, 0.0f);
-			static const gem_color green = gem_color(0.0f, 1.0f, 0.0f);
-			static const gem_color red = gem_color(1.0f, 0.0f, 0.0f);
-			static const gem_color pink = gem_color(0.9f, 0.0f, 0.5f);
-
-			switch (gem_num)
-			{
-			case 0: return green;
-			case 1: return gold;
-			case 2: return red;
-			case 3: return pink;
-			default: fmt::throw_exception("unexpected gem_num %d", gem_num);
-			}
+		    static const gem_color gold  = gem_color(1.0f, 0.85f, 0.0f);
+		    static const gem_color green = gem_color(0.0f, 1.0f, 0.0f);
+		    static const gem_color red   = gem_color(1.0f, 0.0f, 0.0f);
+		    static const gem_color pink  = gem_color(0.9f, 0.0f, 0.5f);
+		
+		    switch (gem_num)
+		    {
+		    case 0: return green;
+		    case 1: return gold;
+		    case 2: return red;
+		    case 3: return pink;
+		    default:
+		        fmt::throw_exception("unexpected gem_num %d", gem_num);
+		        return green; // never reached
+		    }
 		}
 	};
 

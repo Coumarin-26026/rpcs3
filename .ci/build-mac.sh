@@ -83,6 +83,10 @@ fi
 
 LLVM_ROOT="$(find /tmp/llvm19 -maxdepth 1 -type d -name 'LLVM-*' | head -1)"
 
+rm -f "$LLVM_ROOT/lib/libc++.1.0.dylib"
+rm -f "$LLVM_ROOT/lib/libc++abi.dylib"
+rm -f "$LLVM_ROOT/lib/libunwind.1.dylib"
+
 export LLVM_DIR="$LLVM_ROOT"
 export CC="$LLVM_ROOT/bin/clang"
 export CXX="$LLVM_ROOT/bin/clang++"

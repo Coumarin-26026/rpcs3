@@ -88,8 +88,8 @@ rm -f "$LLVM_ROOT/lib/libc++abi.dylib"
 rm -f "$LLVM_ROOT/lib/libunwind.1.dylib"
 
 export LLVM_DIR="$LLVM_ROOT"
-export CC="$LLVM_ROOT/bin/clang"
-export CXX="$LLVM_ROOT/bin/clang++"
+export CC=clang
+export CXX=clang++
 
 export PATH="$LLVM_ROOT/bin:$PATH"
 
@@ -159,6 +159,7 @@ cmake ..
 -DUSE_SYSTEM_SDL=ON 
 -DUSE_SYSTEM_OPENCV=ON 
 -G Ninja
+
 
 ninja
 build_status=$?

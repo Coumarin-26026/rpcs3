@@ -143,18 +143,76 @@ static error_code process_get_id(u32 object, vm::ptr<u32> buffer, u32 size, vm::
 	case SYS_INTR_SERVICE_HANDLE_OBJECT: idm_get_set<lv2_obj, lv2_int_serv>(objects); break;
 	case SYS_EVENT_QUEUE_OBJECT: idm_get_set<lv2_obj, lv2_event_queue>(objects); break;
 	case SYS_EVENT_PORT_OBJECT: idm_get_set<lv2_obj, lv2_event_port>(objects); break;
-	case SYS_TRACE_OBJECT: fmt::throw_exception("SYS_TRACE_OBJECT");
-	case SYS_SPUIMAGE_OBJECT: idm_get_set<lv2_obj, lv2_spu_image>(objects); break;
-	case SYS_PRX_OBJECT: idm_get_set<lv2_obj, lv2_prx>(objects); break;
-	case SYS_OVERLAY_OBJECT: idm_get_set<lv2_obj, lv2_overlay>(objects); break;
-	case SYS_LWMUTEX_OBJECT: idm_get_set<lv2_obj, lv2_lwmutex>(objects); break;
-	case SYS_TIMER_OBJECT: idm_get_set<lv2_obj, lv2_timer>(objects); break;
-	case SYS_SEMAPHORE_OBJECT: idm_get_set<lv2_obj, lv2_sema>(objects); break;
-	case SYS_FS_FD_OBJECT: idm_get_set<lv2_fs_object, lv2_fs_object>(objects); break;
-	case SYS_LWCOND_OBJECT: idm_get_set<lv2_obj, lv2_lwcond>(objects); break;
-	case SYS_EVENT_FLAG_OBJECT: idm_get_set<lv2_obj, lv2_event_flag>(objects); break;
-	case SYS_SPUPORT_OBJECT: fmt::throw_exception("SYS_SPUPORT_OBJECT");
-	default:
+	case SYS_TRACE_OBJECT:
+{
+    fmt::throw_exception("SYS_TRACE_OBJECT");
+    return CELL_EINVAL;
+}
+
+case SYS_SPUIMAGE_OBJECT:
+{
+    idm_get_set<lv2_obj, lv2_spu_image>(objects);
+    break;
+}
+
+case SYS_PRX_OBJECT:
+{
+    idm_get_set<lv2_obj, lv2_prx>(objects);
+    break;
+}
+
+case SYS_OVERLAY_OBJECT:
+{
+    idm_get_set<lv2_obj, lv2_overlay>(objects);
+    break;
+}
+
+case SYS_LWMUTEX_OBJECT:
+{
+    idm_get_set<lv2_obj, lv2_lwmutex>(objects);
+    break;
+}
+
+case SYS_TIMER_OBJECT:
+{
+    idm_get_set<lv2_obj, lv2_timer>(objects);
+    break;
+}
+
+case SYS_SEMAPHORE_OBJECT:
+{
+    idm_get_set<lv2_obj, lv2_sema>(objects);
+    break;
+}
+
+case SYS_FS_FD_OBJECT:
+{
+    idm_get_set<lv2_fs_object, lv2_fs_object>(objects);
+    break;
+}
+
+case SYS_LWCOND_OBJECT:
+{
+    idm_get_set<lv2_obj, lv2_lwcond>(objects);
+    break;
+}
+
+case SYS_EVENT_FLAG_OBJECT:
+{
+    idm_get_set<lv2_obj, lv2_event_flag>(objects);
+    break;
+}
+
+case SYS_SPUPORT_OBJECT:
+{
+    fmt::throw_exception("SYS_SPUPORT_OBJECT");
+    return CELL_EINVAL;
+}
+
+default:
+{
+    return CELL_EINVAL;
+}
 	{
 		return CELL_EINVAL;
 	}

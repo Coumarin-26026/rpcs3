@@ -4916,6 +4916,7 @@ bool spu_thread::process_mfc_cmd()
 	}
 
 	fmt::throw_exception("Unknown command (cmd=%s, lsa=0x%x, ea=0x%llx, tag=0x%x, size=0x%x)",
+	return false;	
 		ch_mfc_cmd.cmd, ch_mfc_cmd.lsa, ch_mfc_cmd.eal, ch_mfc_cmd.tag, ch_mfc_cmd.size);
 }
 
@@ -5952,6 +5953,7 @@ s64 spu_thread::get_ch_value(u32 ch)
 	}
 
 	fmt::throw_exception("Unknown/illegal channel in RDCH (ch=%d [%s])", ch, ch < 128 ? spu_ch_name[ch] : "???");
+	return 0;
 }
 
 bool spu_thread::set_ch_value(u32 ch, u32 value)
@@ -6164,6 +6166,7 @@ bool spu_thread::set_ch_value(u32 ch, u32 value)
 			}
 		}
 	}
+	ASMJIT_FALLTHROUGH;	
 
 	case SPU_WrOutMbox:
 	{
@@ -6389,6 +6392,7 @@ bool spu_thread::set_ch_value(u32 ch, u32 value)
 	}
 
 	fmt::throw_exception("Unknown/illegal channel in WRCH (ch=%d [%s], value=0x%x)", ch, ch < 128 ? spu_ch_name[ch] : "???", value);
+	return false;
 }
 
 extern void resume_spu_thread_group_from_waiting(spu_thread& spu, std::array<shared_ptr<named_thread<spu_thread>>, 8>& notify_spus)
@@ -6883,6 +6887,7 @@ bool spu_thread::stop_and_signal(u32 code)
 	}
 
 	fmt::throw_exception("Unknown STOP code: 0x%x (op=0x%x, Out_MBox=%s)", code, _ref<u32>(pc), ch_out_mbox);
+	return false;
 }
 
 void spu_thread::halt()

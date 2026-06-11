@@ -4915,8 +4915,15 @@ bool spu_thread::process_mfc_cmd()
 	}
 	}
 
-	fmt::throw_exception("Unknown command (cmd=%s, lsa=0x%x, ea=0x%llx, tag=0x%x, size=0x%x)",	
-		ch_mfc_cmd.cmd, ch_mfc_cmd.lsa, ch_mfc_cmd.eal, ch_mfc_cmd.tag, ch_mfc_cmd.size);
+	fmt::throw_exception(
+		"Unknown command (cmd=%s, lsa=0x%x, ea=0x%llx, tag=0x%x, size=0x%x)",
+	    ch_mfc_cmd.cmd,
+	    ch_mfc_cmd.lsa,
+	    ch_mfc_cmd.eal,
+	    ch_mfc_cmd.tag,
+	    ch_mfc_cmd.size);
+
+	return false;
 }
 
 bool spu_thread::reservation_check(u32 addr, const decltype(rdata)& data, u32 current_eal) const

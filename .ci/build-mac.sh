@@ -138,6 +138,24 @@ rm -rf build
 mkdir -p build
 cd build
 
+echo "====================================="
+echo "COMMIT:"
+git rev-parse HEAD
+
+echo "====================================="
+echo "CELLVOICE 170-210:"
+sed -n '170,210p' ../rpcs3/Emu/Cell/Modules/cellVoice.cpp
+
+echo "====================================="
+echo "CELLVDEC 720-740:"
+sed -n '720,740p' ../rpcs3/Emu/Cell/Modules/cellVdec.cpp
+
+echo "====================================="
+echo "CELLVDEC 1140-1165:"
+sed -n '1140,1165p' ../rpcs3/Emu/Cell/Modules/cellVdec.cpp
+
+echo "====================================="
+
 export CFLAGS="-Wno-error=return-type"
 export CXXFLAGS="-Wno-error=return-type"
 

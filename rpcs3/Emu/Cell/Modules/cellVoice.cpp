@@ -191,6 +191,7 @@ error_code cellVoiceCreatePort(vm::ptr<u32> portId, vm::cptr<CellVoicePortParam>
 	}
 
 	fmt::throw_exception("Unreachable");
+	return CELL_VOICE_ERROR_GENERAL;
 }
 
 error_code cellVoiceDeletePort(u32 portId)

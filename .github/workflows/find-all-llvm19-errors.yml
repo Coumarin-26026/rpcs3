@@ -1,4 +1,4 @@
-name: Find All LLVM19 Errors
+name: LLVM19 Error Scanner
 
 on:
   workflow_dispatch:
@@ -12,56 +12,85 @@ jobs:
       CCACHE_DIR: /tmp/ccache_dir
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Restore LLVM Cache
-        uses: actions/cache/restore@v4
-        with:
-          path: /tmp/llvm19
-          key: llvm19-arm64
-
-      - name: Restore Build Cache
-        uses: actions/cache/restore@v4
-        with:
-          path: /tmp/ccache_dir
-          key: macOS-ccache-Apple-Silicon
-
-      - name: Prepare Build Directory
+      - name: Setup Environment
         run: |
-          chmod +x .ci/build-mac.sh
+          export HOMEBREW_NO_AUTO_UPDATE=1
 
-          # Chạy build script tới khi tạo xong build/
-          sed '/^ninja$/,$d' .ci/build-mac.sh > /tmp/configure-only.sh
+          brew update
 
-          chmod +x /tmp/configure-only.sh
+          brew install -f --overwrite --quiet \
+            ccache \
+            googletest \
+            opencv@4 \
+            sdl3 \
+            vulkan-headers \
+            vulkan-loader \
+            molten-vk
 
-          /tmp/configure-only.sh
+      - name: Download LLVM 19
+        run: |
+          if [ ! -d /tmp/llvm19 ]; then
+            curl -L \
+              "https://drive.usercontent.google.com/download?id=1VqGI4QH4p2j0Ldg_2zDvvF_tu6qOHzqA&export=download&confirm=t" \
+              -o /tmp/llvm19.tar.gz
 
-      - name: Scan All Compile Errors
+            mkdir -p /tmp/llvm19
+            tar -xzf /tmp/llvm19.tar.gz -C /tmp/llvm19
+          fi
+
+      - name: Download Qt
+        run: |
+          curl -L \
+            "https://drive.usercontent.google.com/download?id=1tiGT8NU3eUkfU956kkQilYwuK2kUCnC3&export=download&confirm=t" \
+            -o /tmp/qt-6.5.8-arm64.tar.gz
+
+          rm -rf /tmp/qt65
+          tar -xzf /tmp/qt-6.5.8-arm64.tar.gz -C /tmp
+
+      - name: Configure
+        run: |
+          LLVM_ROOT=$(find /tmp/llvm19 -maxdepth 1 -type d -name 'LLVM-*' | head -1)
+
+          export CC="$LLVM_ROOT/bin/clang"
+          export CXX="$LLVM_ROOT/bin/clang++"
+          export PATH="$LLVM_ROOT/bin:$PATH"
+
+          git submodule update --init --depth=1 --jobs=8 \
+            $(awk '/path/ && !/llvm/ && !/opencv/ && !/SDL/ && !/feralinteractive/ { print $3 }' .gitmodules)
+
+          mkdir build
+          cd build
+
+          cmake .. \
+            -DCMAKE_PREFIX_PATH=/tmp/qt65 \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 \
+            -DCMAKE_OSX_ARCHITECTURES=arm64 \
+            -DSTATIC_LINK_LLVM=ON \
+            -DUSE_SYSTEM_SDL=ON \
+            -DUSE_SYSTEM_OPENCV=ON \
+            -G Ninja
+
+      - name: Scan All Errors
         run: |
           cd build
 
           ninja -k 9999 \
             2>&1 | tee ../full-build.log
 
-          exit 0
+          true
 
-      - name: Extract Errors
+      - name: Extract Error List
         run: |
-          grep -n "error:" full-build.log > llvm19-errors.txt || true
+          grep "error:" full-build.log > llvm19-errors.txt || true
 
-          grep -n "return-type" full-build.log >> llvm19-errors.txt || true
-
-          sort -u llvm19-errors.txt > llvm19-errors-unique.txt
-
-      - name: Upload Logs
+      - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: llvm19-full-report
+          name: llvm19-report
           path: |
             full-build.log
             llvm19-errors.txt
-            llvm19-errors-unique.txt

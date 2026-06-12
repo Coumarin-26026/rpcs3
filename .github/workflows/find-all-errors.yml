@@ -131,6 +131,11 @@ jobs:
             -DUSE_SYSTEM_OPENCV=ON \
             -DCMAKE_CXX_FLAGS="-ferror-limit=0 -Wno-error=return-type -Wno-return-type" \
             -G Ninja
+
+      - name: Find exact source
+        run: |
+          grep -R "Werror=return-type" build -n || true
+          grep -R "Werror=return-type" . -n || true      
     
       - name: Scan all compile errors
         run: |

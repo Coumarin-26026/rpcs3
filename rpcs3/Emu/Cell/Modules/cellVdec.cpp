@@ -684,7 +684,11 @@ static consteval auto get_sce_decoder_ops()
     else if constexpr (decoder_type == VdecSceDecoderType::jvt)
         return VDEC_SCE_DECODER_OPS_JVT;
     else
+    {
         static_assert(decoder_type != decoder_type, "Unsupported decoder");
+    }
+
+    return VDEC_SCE_DECODER_OPS_MPEG2;
 }
 
 template <VdecSceDecoderType decoder_type>
@@ -1158,6 +1162,7 @@ static VdecDecoderSpecificOps get_decoder_specific_ops(u32 codec_type)
 	default:
 		fmt::throw_exception("Invalid codec type");
 	}
+	return {};
 }
 
 static inline u32 get_unk_size_2(u32 unk)

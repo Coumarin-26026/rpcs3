@@ -460,6 +460,8 @@ llvm::Constant* cpu_translator::make_const_vector<v128>(v128 v, llvm::Type* t, u
 	}
 
 	fmt::throw_exception("[line %u] No supported constant type", _line);
+
+	return nullptr;
 }
 
 void cpu_translator::replace_intrinsics(llvm::Function& f)

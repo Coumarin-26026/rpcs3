@@ -140,6 +140,49 @@ jobs:
             2>&1 | tee ../full-build.log
     
           exit 0
+
+      - name: Find return-type flags
+        run: |
+          echo "===== WERROR FLAGS =====" | tee werror-search.txt
+    
+          grep -R "Werror=return-type" . -n \
+            >> werror-search.txt 2>&1 || true
+    
+          grep -R "return-type" . -n \
+            >> werror-search.txt 2>&1 || true
+    
+          grep -R "Werror" . -n \
+            >> werror-search.txt 2>&1 || true
+    
+          grep -R "add_compile_options" . -n \
+            >> werror-search.txt 2>&1 || true
+    
+          grep -R "target_compile_options" . -n \
+            >> werror-search.txt 2>&1 || true
+    
+          grep -R "CMAKE_CXX_FLAGS" . -n \
+            >> werror-search.txt 2>&1 || true
+    
+      - name: Extract errors
+        run: |
+          grep -n "error:" full-build.log > llvm19-errors.txt || true
+    
+          sort -u llvm19-errors.txt > llvm19-errors-unique.txt
+    
+          grep -n "non-void function does not return" full-build.log \
+            > return-type-errors.txt || true
+    
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        with:
+          name: llvm19-report
+          path: |
+            full-build.log
+            llvm19-errors.txt
+            llvm19-errors-unique.txt
+            return-type-errors.txt
+            werror-search.txt
+    
     
       - name: Extract errors
         run: |

@@ -966,8 +966,10 @@ static error_code query_memory_avc_mvc(ppu_thread& ppu, u32 profile_level, vm::p
 		case CELL_VDEC_AVC_LEVEL_4P1:
 		case CELL_VDEC_AVC_LEVEL_4P2:
 		case CELL_VDEC_AVC_LEVEL_UNK: return is_mvc ? 0x487ed00 : 0x335ab00;
-		default: std::unreachable(); // Already checked above
+		default: 
+			std::unreachable(); // Already checked above
 		}
+		return 0;
 	}();
 
 	return attr->mem_size > max_mem_size ? static_cast<error_code>(CELL_VDEC_ERROR_FATAL) : CELL_OK;
@@ -1074,8 +1076,10 @@ static error_code query_attr_divx(ppu_thread& ppu, VdecDecoderAttr& attr, u32 pr
 		case CELL_VDEC_DIVX_HD_720:       return 0x77df0e;
 		case CELL_VDEC_DIVX_HD_1080:      return 0xf420fe;
 		case CELL_VDEC_DIVX_UNK:          return 0x1ce600;
-		default: std::unreachable(); // Already checked above
+		default: 
+			std::unreachable(); // Already checked above
 		}
+		return 0;
 	}();
 
 	if (*mem_size > max_mem_size)
@@ -1222,7 +1226,9 @@ error_code cellVdecQueryAttrEx(ppu_thread& ppu, vm::cptr<CellVdecTypeEx> type, v
 			case CELL_VDEC_MPEG2_MP_ML:  return new_sdk ? 0x2dfb8b : 0x47110b;
 			case CELL_VDEC_MPEG2_MP_H14: return new_sdk ? 0xa0270b : 0xb8f90b;
 			case CELL_VDEC_MPEG2_MP_HL:  return new_sdk ? 0xd2f40b : 0xeb990b;
-			default: std::unreachable(); // Already checked in VdecDecoderSpecificOps::query_attr
+			default: 
+				std::unreachable(); // Already checked in VdecDecoderSpecificOps::query_attr
+				return 0;
 			}
 
 		case CELL_VDEC_CODEC_TYPE_AVC:
@@ -1242,7 +1248,9 @@ error_code cellVdecQueryAttrEx(ppu_thread& ppu, vm::cptr<CellVdecTypeEx> type, v
 			case CELL_VDEC_AVC_LEVEL_4P1:
 			case CELL_VDEC_AVC_LEVEL_4P2:
 			case CELL_VDEC_AVC_LEVEL_UNK: return new_sdk ? 0x33a627d : 0x36a527d;
-			default: std::unreachable(); // Already checked in VdecDecoderSpecificOps::query_attr
+			default: 
+				std::unreachable(); // Already checked in VdecDecoderSpecificOps::query_attr
+				return 0;
 			}
 
 		case CELL_VDEC_CODEC_TYPE_MPEG4:
@@ -1254,7 +1262,9 @@ error_code cellVdecQueryAttrEx(ppu_thread& ppu, vm::cptr<CellVdecTypeEx> type, v
 			case CELL_VDEC_MPEG4_SP_D1_NTSC: return new_sdk ? 0x22db0b : 0x25da8b;
 			case CELL_VDEC_MPEG4_SP_VGA:     return new_sdk ? 0x1fc00b : 0x22bf8b;
 			case CELL_VDEC_MPEG4_SP_D1_PAL:  return new_sdk ? 0x28570b : 0x2b568b;
-			default: std::unreachable(); // Already checked in VdecDecoderSpecificOps::query_attr
+			default: 
+				std::unreachable(); // Already checked in VdecDecoderSpecificOps::query_attr
+				return 0;
 			}
 
 		case CELL_VDEC_CODEC_TYPE_VC1:
@@ -1270,7 +1280,9 @@ error_code cellVdecQueryAttrEx(ppu_thread& ppu, vm::cptr<CellVdecTypeEx> type, v
 			case CELL_VDEC_VC1_AP_L2: return new_sdk ? 0x12073fb : 0x184b857;
 			case CELL_VDEC_VC1_AP_L3: return new_sdk ? 0x202887b : 0x2b562fb;
 			case CELL_VDEC_VC1_AP_L4: return new_sdk ? 0x3949a7b : 0x4d0a77b;
-			default: std::unreachable(); // Already checked in VdecDecoderSpecificOps::query_attr
+			default: 
+				std::unreachable(); // Already checked in VdecDecoderSpecificOps::query_attr
+				return 0;
 			}
 
 		case CELL_VDEC_CODEC_TYPE_DIVX:
@@ -1281,7 +1293,9 @@ error_code cellVdecQueryAttrEx(ppu_thread& ppu, vm::cptr<CellVdecTypeEx> type, v
 			case CELL_VDEC_DIVX_HOME_THEATER: return new_sdk ? 0x45794e : 0x498060;
 			case CELL_VDEC_DIVX_HD_720:       return new_sdk ? 0x7c4f7e : 0x805690;
 			case CELL_VDEC_DIVX_HD_1080:      return new_sdk ? 0xf8916e : 0xfc9870;
-			default: std::unreachable(); // Already checked in VdecDecoderSpecificOps::query_attr
+			default: 
+				std::unreachable(); // Already checked in VdecDecoderSpecificOps::query_attr
+				return 0;
 			}
 
 		case CELL_VDEC_CODEC_TYPE_JVT:
@@ -1301,7 +1315,9 @@ error_code cellVdecQueryAttrEx(ppu_thread& ppu, vm::cptr<CellVdecTypeEx> type, v
 			case CELL_VDEC_AVC_LEVEL_4P1:
 			case CELL_VDEC_AVC_LEVEL_4P2:
 			case CELL_VDEC_AVC_LEVEL_UNK: return new_sdk ? 0x6be11db : 0x6bd91db;
-			default: std::unreachable(); // Already checked in VdecDecoderSpecificOps::query_attr
+			default: 
+				std::unreachable(); // Already checked in VdecDecoderSpecificOps::query_attr
+				return 0;
 			}
 
 		case CELL_VDEC_CODEC_TYPE_DIVX3_11:
@@ -1331,6 +1347,7 @@ error_code cellVdecQueryAttrEx(ppu_thread& ppu, vm::cptr<CellVdecTypeEx> type, v
 		default:
 			std::unreachable(); // Already checked above
 		}
+		return 0;
 	}();
 
 	if (mem_size > max_mem_size)

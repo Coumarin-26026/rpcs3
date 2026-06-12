@@ -676,19 +676,25 @@ template <VdecSceDecoderType decoder_type>
 static consteval auto get_sce_decoder_ops()
 {
     if constexpr (decoder_type == VdecSceDecoderType::mpeg2)
+    {
         return VDEC_SCE_DECODER_OPS_MPEG2;
+    }
     else if constexpr (decoder_type == VdecSceDecoderType::mpeg4)
+    {
         return VDEC_SCE_DECODER_OPS_MPEG4;
+    }
     else if constexpr (decoder_type == VdecSceDecoderType::vc1)
+    {
         return VDEC_SCE_DECODER_OPS_VC1;
+    }
     else if constexpr (decoder_type == VdecSceDecoderType::jvt)
+    {
         return VDEC_SCE_DECODER_OPS_JVT;
+    }
     else
     {
         static_assert(decoder_type != decoder_type, "Unsupported decoder");
     }
-
-    return VDEC_SCE_DECODER_OPS_MPEG2;
 }
 
 template <VdecSceDecoderType decoder_type>
@@ -733,7 +739,9 @@ static bool check_frame_dimensions_mpeg2(u32 profile_level, be_t<u32>& max_decod
 		case SMVD2_MP_ML:  return {  720,  576 };
 		case SMVD2_MP_H14: return { 1440, 1152 };
 		case SMVD2_MP_HL:  return { 1920, 1152 };
-		default: fmt::throw_exception("Invalid profile level");
+		default: 
+			fmt::throw_exception("Invalid profile level");
+			std::unreachable();
 		}
 	}();
 

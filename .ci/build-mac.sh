@@ -138,6 +138,9 @@ rm -rf build
 mkdir -p build
 cd build
 
+export CFLAGS="-Wno-error=return-type"
+export CXXFLAGS="-Wno-error=return-type"
+
 cmake .. \
 -DCMAKE_PREFIX_PATH=/tmp/qt65 \
 -DQt6_DIR="$Qt6_DIR" \
@@ -162,7 +165,7 @@ cmake .. \
 -DUSE_SYSTEM_MVK=ON \
 -DUSE_SYSTEM_SDL=ON \
 -DUSE_SYSTEM_OPENCV=ON \
--DCMAKE_CXX_FLAGS="-Wno-error" \
+-DCMAKE_CXX_FLAGS="-Wno-error=return-type -Wno-return-type" \
 -G Ninja
 
 

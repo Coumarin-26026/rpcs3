@@ -807,7 +807,7 @@ static error_code get_memory_size(ppu_thread& ppu, u32 profile_level, const vm::
 					}};
 				}
 
-				if constexpr (decoder_type == VdecSceDecoderType::mpeg4)
+				else if constexpr (decoder_type == VdecSceDecoderType::mpeg4)
 				{
 					return vm::var<Smvd4Params>
 					{{
@@ -819,7 +819,7 @@ static error_code get_memory_size(ppu_thread& ppu, u32 profile_level, const vm::
 					}};
 				}
 
-				if constexpr (decoder_type == VdecSceDecoderType::vc1)
+				else if constexpr (decoder_type == VdecSceDecoderType::vc1)
 				{
 					return vm::var<Svc1dParams>
 					{{
@@ -831,7 +831,7 @@ static error_code get_memory_size(ppu_thread& ppu, u32 profile_level, const vm::
 					}};
 				}
 
-				if constexpr (decoder_type == VdecSceDecoderType::jvt)
+				else if constexpr (decoder_type == VdecSceDecoderType::jvt)
 				{
 					return vm::var<SjvtdParams>
 					{{
@@ -845,6 +845,11 @@ static error_code get_memory_size(ppu_thread& ppu, u32 profile_level, const vm::
 						.number_of_decoded_frame_buffer = codec_specific_info->numberOfDecodedFrameBuffer != 0 ? codec_specific_info->numberOfDecodedFrameBuffer : umax
 					}};
 				}
+				else
+		        {
+		            static_assert(decoder_type != decoder_type, "Unsupported decoder");
+					std::unreachable();
+		        }
 			}()
 		};
 
@@ -1161,8 +1166,8 @@ static VdecDecoderSpecificOps get_decoder_specific_ops(u32 codec_type)
 
 	default:
 		fmt::throw_exception("Invalid codec type");
+		std::unreachable();
 	}
-	return {};
 }
 
 static inline u32 get_unk_size_2(u32 unk)

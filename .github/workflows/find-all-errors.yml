@@ -1,4 +1,4 @@
-name: LLVM19 Error Scanner
+name: Find All LLVM19 Errors
 
 on:
   workflow_dispatch:
@@ -10,16 +10,17 @@ jobs:
     env:
       AARCH64: 1
       CCACHE_DIR: /tmp/ccache_dir
+      RUN_UNIT_TESTS: OFF
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Setup Environment
+      - name: Install dependencies
         run: |
           export HOMEBREW_NO_AUTO_UPDATE=1
-
           brew update
 
           brew install -f --overwrite --quiet \
@@ -38,9 +39,25 @@ jobs:
               "https://drive.usercontent.google.com/download?id=1VqGI4QH4p2j0Ldg_2zDvvF_tu6qOHzqA&export=download&confirm=t" \
               -o /tmp/llvm19.tar.gz
 
+            rm -rf /tmp/llvm19
             mkdir -p /tmp/llvm19
+
             tar -xzf /tmp/llvm19.tar.gz -C /tmp/llvm19
           fi
+
+      - name: Setup LLVM
+        run: |
+          LLVM_ROOT=$(find /tmp/llvm19 -maxdepth 1 -type d -name 'LLVM-*' | head -1)
+
+          echo "LLVM_ROOT=$LLVM_ROOT"
+
+          rm -f "$LLVM_ROOT/lib/libc++.1.0.dylib"
+          rm -f "$LLVM_ROOT/lib/libc++abi.dylib"
+          rm -f "$LLVM_ROOT/lib/libunwind.1.dylib"
+
+          echo "LLVM_ROOT=$LLVM_ROOT" >> $GITHUB_ENV
+          echo "CC=$LLVM_ROOT/bin/clang" >> $GITHUB_ENV
+          echo "CXX=$LLVM_ROOT/bin/clang++" >> $GITHUB_ENV
 
       - name: Download Qt
         run: |
@@ -51,46 +68,49 @@ jobs:
           rm -rf /tmp/qt65
           tar -xzf /tmp/qt-6.5.8-arm64.tar.gz -C /tmp
 
+      - name: Checkout submodules
+        run: |
+          git submodule update --init --depth=1 --jobs=8 \
+          $(awk '/path/ && !/llvm/ && !/opencv/ && !/SDL/ && !/feralinteractive/ { print $3 }' .gitmodules)
+
       - name: Configure
         run: |
-          LLVM_ROOT=$(find /tmp/llvm19 -maxdepth 1 -type d -name 'LLVM-*' | head -1)
-
-          export CC="$LLVM_ROOT/bin/clang"
-          export CXX="$LLVM_ROOT/bin/clang++"
           export PATH="$LLVM_ROOT/bin:$PATH"
-
-          git submodule update --init --depth=1 --jobs=8 \
-            $(awk '/path/ && !/llvm/ && !/opencv/ && !/SDL/ && !/feralinteractive/ { print $3 }' .gitmodules)
 
           mkdir build
           cd build
 
           cmake .. \
-            -DCMAKE_PREFIX_PATH=/tmp/qt65 \
-            -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 \
-            -DCMAKE_OSX_ARCHITECTURES=arm64 \
-            -DSTATIC_LINK_LLVM=ON \
-            -DUSE_SYSTEM_SDL=ON \
-            -DUSE_SYSTEM_OPENCV=ON \
-            -G Ninja
+          -DCMAKE_PREFIX_PATH=/tmp/qt65 \
+          -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 \
+          -DCMAKE_OSX_ARCHITECTURES=arm64 \
+          -DCMAKE_OSX_SYSROOT="$(xcrun --sdk macosx --show-sdk-path)" \
+          -DSTATIC_LINK_LLVM=ON \
+          -DUSE_SDL=ON \
+          -DUSE_SYSTEM_SDL=ON \
+          -DUSE_SYSTEM_OPENCV=ON \
+          -DUSE_PRECOMPILED_HEADERS=OFF \
+          -G Ninja
 
-      - name: Scan All Errors
+      - name: Scan all compile errors
         run: |
           cd build
 
-          ninja -k 9999 \
-            2>&1 | tee ../full-build.log
+          ninja -k 9999 -j 1 \
+          2>&1 | tee ../full-build.log
 
           true
 
-      - name: Extract Error List
+      - name: Extract errors
         run: |
           grep "error:" full-build.log > llvm19-errors.txt || true
+          sort -u llvm19-errors.txt > llvm19-errors-unique.txt
 
-      - name: Upload
+      - name: Upload report
         uses: actions/upload-artifact@v4
         with:
           name: llvm19-report
           path: |
             full-build.log
             llvm19-errors.txt
+            llvm19-errors-unique.txt

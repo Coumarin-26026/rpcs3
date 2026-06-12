@@ -675,25 +675,16 @@ extern void vdecEntry(ppu_thread& ppu, u32 vid)
 template <VdecSceDecoderType decoder_type>
 static consteval auto get_sce_decoder_ops()
 {
-	if constexpr (decoder_type == VdecSceDecoderType::mpeg2)
-	{
-		return VDEC_SCE_DECODER_OPS_MPEG2;
-	}
-
-	if constexpr (decoder_type == VdecSceDecoderType::mpeg4)
-	{
-		return VDEC_SCE_DECODER_OPS_MPEG4;
-	}
-
-	if constexpr (decoder_type == VdecSceDecoderType::vc1)
-	{
-		return VDEC_SCE_DECODER_OPS_VC1;
-	}
-
-	if constexpr (decoder_type == VdecSceDecoderType::jvt)
-	{
-		return VDEC_SCE_DECODER_OPS_JVT;
-	}
+    if constexpr (decoder_type == VdecSceDecoderType::mpeg2)
+        return VDEC_SCE_DECODER_OPS_MPEG2;
+    else if constexpr (decoder_type == VdecSceDecoderType::mpeg4)
+        return VDEC_SCE_DECODER_OPS_MPEG4;
+    else if constexpr (decoder_type == VdecSceDecoderType::vc1)
+        return VDEC_SCE_DECODER_OPS_VC1;
+    else if constexpr (decoder_type == VdecSceDecoderType::jvt)
+        return VDEC_SCE_DECODER_OPS_JVT;
+    else
+        static_assert(decoder_type != decoder_type, "Unsupported decoder");
 }
 
 template <VdecSceDecoderType decoder_type>

@@ -367,7 +367,11 @@ error_code sys_lwcond_wait(ppu_thread& ppu, vm::ptr<sys_lwcond_t> lwcond, u64 ti
 		return not_an_error(CELL_ETIMEDOUT);
 	}
 
-	fmt::throw_exception("Unexpected syscall result (lwcond=*0x%x, result=0x%x)", lwcond, +res);
+	fmt::throw_exception(
+	    "Unexpected syscall result (lwcond=*0x%x, result=0x%x)",
+	    lwcond, +res);
+	
+	return CELL_EFAULT;
 }
 
 void sysPrxForUser_sys_lwcond_init(ppu_static_module* _this)

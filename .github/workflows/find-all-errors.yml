@@ -1,116 +1,163 @@
 name: Find All LLVM19 Errors
 
 on:
-  workflow_dispatch:
+workflow_dispatch:
 
 jobs:
-  scan:
-    runs-on: macos-14
+scan:
+runs-on: macos-14
 
-    env:
-      AARCH64: 1
-      CCACHE_DIR: /tmp/ccache_dir
-      RUN_UNIT_TESTS: OFF
+```
+env:
+  AARCH64: 1
+  CCACHE_DIR: /tmp/ccache_dir
+  RUN_UNIT_TESTS: OFF
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+steps:
+  - name: Checkout repository
+    uses: actions/checkout@v4
+    with:
+      fetch-depth: 0
 
-      - name: Install dependencies
-        run: |
-          export HOMEBREW_NO_AUTO_UPDATE=1
-          brew update
+  - name: Install dependencies
+    run: |
+      export HOMEBREW_NO_AUTO_UPDATE=1
+      export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
+      export HOMEBREW_NO_ENV_HINTS=1
+      export HOMEBREW_NO_INSTALL_CLEANUP=1
 
-          brew install -f --overwrite --quiet \
-            ccache \
-            googletest \
-            opencv@4 \
-            sdl3 \
-            vulkan-headers \
-            vulkan-loader \
-            molten-vk
+      brew update
 
-      - name: Download LLVM 19
-        run: |
-          if [ ! -d /tmp/llvm19 ]; then
-            curl -L \
-              "https://drive.usercontent.google.com/download?id=1VqGI4QH4p2j0Ldg_2zDvvF_tu6qOHzqA&export=download&confirm=t" \
-              -o /tmp/llvm19.tar.gz
+      brew install -f --overwrite --quiet \
+        ccache \
+        googletest \
+        opencv@4 \
+        sdl3 \
+        vulkan-headers \
+        vulkan-loader \
+        molten-vk
 
-            rm -rf /tmp/llvm19
-            mkdir -p /tmp/llvm19
+      brew unlink --quiet \
+        ffmpeg \
+        fmt \
+        qtbase \
+        qtsvg \
+        qtdeclarative \
+        protobuf || true
 
-            tar -xzf /tmp/llvm19.tar.gz -C /tmp/llvm19
-          fi
+  - name: Download LLVM 19
+    run: |
+      if [ ! -d /tmp/llvm19 ]; then
+        echo "Downloading LLVM..."
 
-      - name: Setup LLVM
-        run: |
-          LLVM_ROOT=$(find /tmp/llvm19 -maxdepth 1 -type d -name 'LLVM-*' | head -1)
+        curl -L \
+          "https://drive.usercontent.google.com/download?id=1VqGI4QH4p2j0Ldg_2zDvvF_tu6qOHzqA&export=download&confirm=t" \
+          -o /tmp/llvm19.tar.gz
 
-          echo "LLVM_ROOT=$LLVM_ROOT"
+        rm -rf /tmp/llvm19
+        mkdir -p /tmp/llvm19
 
-          rm -f "$LLVM_ROOT/lib/libc++.1.0.dylib"
-          rm -f "$LLVM_ROOT/lib/libc++abi.dylib"
-          rm -f "$LLVM_ROOT/lib/libunwind.1.dylib"
+        tar -xzf /tmp/llvm19.tar.gz -C /tmp/llvm19
+      fi
 
-          echo "LLVM_ROOT=$LLVM_ROOT" >> $GITHUB_ENV
-          echo "CC=$LLVM_ROOT/bin/clang" >> $GITHUB_ENV
-          echo "CXX=$LLVM_ROOT/bin/clang++" >> $GITHUB_ENV
+  - name: Setup LLVM
+    run: |
+      LLVM_ROOT=$(find /tmp/llvm19 -maxdepth 1 -type d -name 'LLVM-*' | head -1)
 
-      - name: Download Qt
-        run: |
-          curl -L \
-            "https://drive.usercontent.google.com/download?id=1tiGT8NU3eUkfU956kkQilYwuK2kUCnC3&export=download&confirm=t" \
-            -o /tmp/qt-6.5.8-arm64.tar.gz
+      echo "LLVM_ROOT=$LLVM_ROOT"
 
-          rm -rf /tmp/qt65
-          tar -xzf /tmp/qt-6.5.8-arm64.tar.gz -C /tmp
+      rm -f "$LLVM_ROOT/lib/libc++.1.0.dylib"
+      rm -f "$LLVM_ROOT/lib/libc++abi.dylib"
+      rm -f "$LLVM_ROOT/lib/libunwind.1.dylib"
 
-      - name: Checkout submodules
-        run: |
-          git submodule update --init --depth=1 --jobs=8 \
-          $(awk '/path/ && !/llvm/ && !/opencv/ && !/SDL/ && !/feralinteractive/ { print $3 }' .gitmodules)
+      echo "LLVM_ROOT=$LLVM_ROOT" >> "$GITHUB_ENV"
 
-      - name: Configure
-        run: |
-          export PATH="$LLVM_ROOT/bin:$PATH"
+      echo "CC=$LLVM_ROOT/bin/clang" >> "$GITHUB_ENV"
+      echo "CXX=$LLVM_ROOT/bin/clang++" >> "$GITHUB_ENV"
 
-          mkdir build
-          cd build
+      echo "$LLVM_ROOT/bin" >> "$GITHUB_PATH"
 
-          cmake .. \
-          -DCMAKE_PREFIX_PATH=/tmp/qt65 \
-          -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 \
-          -DCMAKE_OSX_ARCHITECTURES=arm64 \
-          -DCMAKE_OSX_SYSROOT="$(xcrun --sdk macosx --show-sdk-path)" \
-          -DSTATIC_LINK_LLVM=ON \
-          -DUSE_SDL=ON \
-          -DUSE_SYSTEM_SDL=ON \
-          -DUSE_SYSTEM_OPENCV=ON \
-          -DUSE_PRECOMPILED_HEADERS=OFF \
-          -G Ninja
+      "$LLVM_ROOT/bin/clang" --version
+      "$LLVM_ROOT/bin/clang++" --version
 
-      - name: Scan all compile errors
-        run: |
-          cd build
+  - name: Download Qt 6.5.8
+    run: |
+      curl -L \
+        "https://drive.usercontent.google.com/download?id=1tiGT8NU3eUkfU956kkQilYwuK2kUCnC3&export=download&confirm=t&uuid=3ad22766-0f54-48b6-bfd2-de26be6d9383" \
+        -o /tmp/qt-6.5.8-arm64.tar.gz
 
-          ninja -k 9999 -j 1 \
-          2>&1 | tee ../full-build.log
+      rm -rf /tmp/qt65
+      tar -xzf /tmp/qt-6.5.8-arm64.tar.gz -C /tmp
 
-          true
+  - name: Checkout submodules
+    run: |
+      git submodule update --init --depth=1 --jobs=8 \
+      $(awk '/path/ && !/llvm/ && !/opencv/ && !/SDL/ && !/feralinteractive/ { print $3 }' .gitmodules)
 
-      - name: Extract errors
-        run: |
-          grep "error:" full-build.log > llvm19-errors.txt || true
-          sort -u llvm19-errors.txt > llvm19-errors-unique.txt
+  - name: Configure
+    run: |
+      BREW_PATH="$(brew --prefix)"
 
-      - name: Upload report
-        uses: actions/upload-artifact@v4
-        with:
-          name: llvm19-report
-          path: |
-            full-build.log
-            llvm19-errors.txt
-            llvm19-errors-unique.txt
+      export SDL3_DIR="$BREW_PATH/opt/sdl3/lib/cmake/SDL3"
+
+      export Qt6_DIR=/tmp/qt65/lib/cmake/Qt6
+      export Qt6CoreTools_DIR=/tmp/qt65/lib/cmake/Qt6CoreTools
+      export Qt6WidgetsTools_DIR=/tmp/qt65/lib/cmake/Qt6WidgetsTools
+      export Qt6DBusTools_DIR=/tmp/qt65/lib/cmake/Qt6DBusTools
+
+      rm -rf build
+      mkdir build
+      cd build
+
+      cmake .. \
+      -DCMAKE_PREFIX_PATH=/tmp/qt65 \
+      -DQt6_DIR="$Qt6_DIR" \
+      -DQt6CoreTools_DIR="$Qt6CoreTools_DIR" \
+      -DQt6WidgetsTools_DIR="$Qt6WidgetsTools_DIR" \
+      -DQt6DBusTools_DIR="$Qt6DBusTools_DIR" \
+      -DSDL3_DIR="$SDL3_DIR" \
+      -DBUILD_RPCS3_TESTS=OFF \
+      -DRUN_RPCS3_TESTS=OFF \
+      -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 \
+      -DCMAKE_OSX_ARCHITECTURES=arm64 \
+      -DCMAKE_OSX_SYSROOT="$(xcrun --sdk macosx --show-sdk-path)" \
+      -DSTATIC_LINK_LLVM=ON \
+      -DUSE_SDL=ON \
+      -DUSE_DISCORD_RPC=ON \
+      -DUSE_AUDIOUNIT=ON \
+      -DUSE_SYSTEM_FFMPEG=OFF \
+      -DUSE_NATIVE_INSTRUCTIONS=OFF \
+      -DUSE_PRECOMPILED_HEADERS=OFF \
+      -DUSE_SYSTEM_MVK=ON \
+      -DUSE_SYSTEM_SDL=ON \
+      -DUSE_SYSTEM_OPENCV=ON \
+      -DCMAKE_CXX_FLAGS="-ferror-limit=0" \
+      -G Ninja
+
+  - name: Scan all compile errors
+    run: |
+      cd build
+
+      ninja -k 9999 -j 1 \
+        2>&1 | tee ../full-build.log
+
+      exit 0
+
+  - name: Extract errors
+    run: |
+      grep -n "error:" full-build.log > llvm19-errors.txt || true
+
+      sort -u llvm19-errors.txt > llvm19-errors-unique.txt
+
+      grep -n "non-void function does not return" full-build.log > return-type-errors.txt || true
+
+  - name: Upload report
+    uses: actions/upload-artifact@v4
+    with:
+      name: llvm19-report
+      path: |
+        full-build.log
+        llvm19-errors.txt
+        llvm19-errors-unique.txt
+        return-type-errors.txt
+```

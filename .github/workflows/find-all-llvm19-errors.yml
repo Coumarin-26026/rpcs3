@@ -1,0 +1,67 @@
+name: Find All LLVM19 Errors
+
+on:
+  workflow_dispatch:
+
+jobs:
+  scan:
+    runs-on: macos-14
+
+    env:
+      AARCH64: 1
+      CCACHE_DIR: /tmp/ccache_dir
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Restore LLVM Cache
+        uses: actions/cache/restore@v4
+        with:
+          path: /tmp/llvm19
+          key: llvm19-arm64
+
+      - name: Restore Build Cache
+        uses: actions/cache/restore@v4
+        with:
+          path: /tmp/ccache_dir
+          key: macOS-ccache-Apple-Silicon
+
+      - name: Prepare Build Directory
+        run: |
+          chmod +x .ci/build-mac.sh
+
+          # Chạy build script tới khi tạo xong build/
+          sed '/^ninja$/,$d' .ci/build-mac.sh > /tmp/configure-only.sh
+
+          chmod +x /tmp/configure-only.sh
+
+          /tmp/configure-only.sh
+
+      - name: Scan All Compile Errors
+        run: |
+          cd build
+
+          ninja -k 9999 \
+            2>&1 | tee ../full-build.log
+
+          exit 0
+
+      - name: Extract Errors
+        run: |
+          grep -n "error:" full-build.log > llvm19-errors.txt || true
+
+          grep -n "return-type" full-build.log >> llvm19-errors.txt || true
+
+          sort -u llvm19-errors.txt > llvm19-errors-unique.txt
+
+      - name: Upload Logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: llvm19-full-report
+          path: |
+            full-build.log
+            llvm19-errors.txt
+            llvm19-errors-unique.txt

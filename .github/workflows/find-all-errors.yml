@@ -11,7 +11,7 @@ jobs:
       AARCH64: 1
       CCACHE_DIR: /tmp/ccache_dir
       RUN_UNIT_TESTS: OFF
-
+    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -47,8 +47,6 @@ jobs:
       - name: Download LLVM 19
         run: |
           if [ ! -d /tmp/llvm19 ]; then
-            echo "Downloading LLVM 19..."
-    
             curl -L \
               "https://drive.usercontent.google.com/download?id=1VqGI4QH4p2j0Ldg_2zDvvF_tu6qOHzqA&export=download&confirm=t" \
               -o /tmp/llvm19.tar.gz
@@ -62,8 +60,6 @@ jobs:
       - name: Setup LLVM
         run: |
           LLVM_ROOT=$(find /tmp/llvm19 -maxdepth 1 -type d -name 'LLVM-*' | head -1)
-    
-          echo "LLVM_ROOT=$LLVM_ROOT"
     
           rm -f "$LLVM_ROOT/lib/libc++.1.0.dylib"
           rm -f "$LLVM_ROOT/lib/libc++abi.dylib"
@@ -131,11 +127,35 @@ jobs:
             -DUSE_SYSTEM_OPENCV=ON \
             -DCMAKE_CXX_FLAGS="-ferror-limit=0 -Wno-error=return-type -Wno-return-type" \
             -G Ninja
-
-      - name: Find exact source
+    
+      - name: Find compile flags
         run: |
-          grep -R "Werror=return-type" build -n || true
-          grep -R "Werror=return-type" . -n || true      
+          {
+            echo "===== Werror=return-type ====="
+            grep -R "Werror=return-type" build -n || true
+    
+            echo
+            echo "===== return-type ====="
+            grep -R "return-type" build -n || true
+    
+            echo
+            echo "===== Werror ====="
+            grep -R "Werror" build -n || true
+    
+            echo
+            echo "===== old-style-cast ====="
+            grep -R "old-style-cast" . -n || true
+    
+            echo
+            echo "===== sign-compare ====="
+            grep -R "sign-compare" . -n || true
+    
+            echo
+            echo "===== implicit-fallthrough ====="
+            grep -R "implicit-fallthrough" . -n || true
+          } > werror-search.txt
+    
+          cat werror-search.txt
     
       - name: Scan all compile errors
         run: |
@@ -145,40 +165,6 @@ jobs:
             2>&1 | tee ../full-build.log
     
           exit 0
-
-      - name: Find actual compile flags
-        run: |
-          echo "===== Werror=return-type =====" > werror-search.txt
-    
-          grep -R "Werror=return-type" build -n \
-            >> werror-search.txt 2>&1 || true
-    
-          echo "" >> werror-search.txt
-          echo "===== return-type =====" >> werror-search.txt
-    
-          grep -R "return-type" build -n \
-            >> werror-search.txt 2>&1 || true
-    
-          echo "" >> werror-search.txt
-          echo "===== Werror =====" >> werror-search.txt
-    
-          grep -R "Werror" build -n \
-            >> werror-search.txt 2>&1 || true
-    
-          echo "" >> werror-search.txt
-          echo "===== build.ninja =====" >> werror-search.txt
-    
-          grep -n "return-type" build/build.ninja \
-            >> werror-search.txt 2>&1 || true
-    
-          cat werror-search.txt
-    
-      - name: Upload report
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-flags-report
-          path: build-flags.txt
-
     
       - name: Extract errors
         run: |
@@ -189,7 +175,7 @@ jobs:
           grep -n "non-void function does not return" full-build.log \
             > return-type-errors.txt || true
     
-      - name: Upload report
+      - name: Upload LLVM19 report
         uses: actions/upload-artifact@v4
         with:
           name: llvm19-report

@@ -88,6 +88,50 @@ jobs:
         run: |
           git submodule update --init --depth=1 --jobs=8 \
           $(awk '/path/ && !/llvm/ && !/opencv/ && !/SDL/ && !/feralinteractive/ { print $3 }' .gitmodules)
+
+      - name: Auto fix LLVM19 return-type issues
+        run: |
+          python3 << 'PY'
+          import pathlib
+          import re
+      
+          root = pathlib.Path("rpcs3")
+      
+          exts = {".cpp", ".cc", ".cxx", ".h", ".hpp"}
+      
+          patched = 0
+      
+          for file in root.rglob("*"):
+              if file.suffix not in exts:
+                  continue
+      
+              try:
+                  text = file.read_text(encoding="utf-8")
+              except:
+                  continue
+      
+              old = text
+      
+              # fmt::throw_exception(...);
+              text = re.sub(
+                  r'(fmt::throw_exception\s*\([^;]*\);)',
+                  r'\1\n\tstd::unreachable();',
+                  text
+              )
+      
+              # ensure(...)
+              text = re.sub(
+                  r'(ensure\s*\([^;]*\);)',
+                  r'\1\n\tstd::unreachable();',
+                  text
+              )
+      
+              if text != old:
+                  file.write_text(text, encoding="utf-8")
+                  patched += 1
+      
+          print(f"Patched {patched} files")
+          PY
     
       - name: Configure
         run: |

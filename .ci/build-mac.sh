@@ -68,6 +68,13 @@ LLVM_DIR="$BREW_PATH/opt/llvm@$LLVM_COMPILER_VER"
 # shellcheck disable=SC2046
 git submodule -q update --init --depth=1 --jobs=8 $(awk '/path/ && !/llvm/ && !/opencv/ && !/SDL/ && !/feralinteractive/ { print $3 }' .gitmodules)
 
+DEPS_DIR="$WORKDIR/deps"
+
+if [ ! -d "$DEPS_DIR" ]; then
+    chmod +x .ci/build-dependencies-universal.sh
+    .ci/build-dependencies-universal.sh "$DEPS_DIR"
+fi
+
 mkdir build && cd build || exit 1
 # The below should be uncommented once bugs with Qt 6 QListWidgets when using the OS 26 visual style are resolved.
 # sudo xcode-select -switch /Applications/Xcode_26.3.app/Contents/Developer

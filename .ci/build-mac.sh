@@ -75,7 +75,7 @@ mkdir build && cd build || exit 1
 cmake .. \
     -DBUILD_RPCS3_TESTS="${RUN_UNIT_TESTS}" \
     -DRUN_RPCS3_TESTS="${RUN_UNIT_TESTS}" \
-    -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0 \
+    -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 \
     -DCMAKE_OSX_SYSROOT="$(xcrun --sdk macosx --show-sdk-path)" \
     -DMACOSX_BUNDLE_SHORT_VERSION_STRING="${COMM_TAG}" \
     -DMACOSX_BUNDLE_BUNDLE_VERSION="${COMM_COUNT}" \
